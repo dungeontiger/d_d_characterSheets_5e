@@ -1,0 +1,19 @@
+{
+  "hitDice": 8,
+  "armorProficiencies": [
+    "Light Armor",
+    "Medium Armor",
+    "Shields",
+    "Simple Weapons"
+  ],
+  "weaponProficiencies": [
+    "Simple Weapons"
+  ],
+  "tools": [
+
+  ],
+  "savingThrowProficiencies": [
+    "wis",
+    "cha"
+  ]
+}

@@ -6,5 +6,11 @@
   "level": "2",
   "background": "Sage",
   "alignment": "Chaotic Good",
-  "experience": 750
+  "experience": 750,
+  "str": 5,
+  "dex": 13,
+  "con": 18,
+  "int": 13,
+  "wis": 14,
+  "cha": 13
 }
