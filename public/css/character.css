@@ -1,0 +1,58 @@
+body {
+  width:8.5in;
+  height:11in;
+  border: 1px solid black;
+  padding:10px
+}
+.center {
+  text-align:center
+}
+.title {
+  font-size:32pt;
+  font-family: 'Great Vibes', cursive;
+}
+.small {
+  text-transform: uppercase;
+  font-size:8pt;
+}
+.label {
+  text-transform: uppercase;
+  font-size:8pt;
+  border-top: 1px solid black
+}
+.tableBox {
+  width:100%
+}
+.tableValueBox {
+  height:0.2in
+}
+.oneThird {
+  width:33%
+}
+.one12th {
+  width:8.4%
+}
+.oneEight{
+  width: 12.5%
+}
+.header {
+  text-align:center;
+  font-size:14pt;
+  text-transform: uppercase;
+  padding-top:10px
+}
+.larger {
+  font-size: 10pt
+}
+.bottomBorder {
+  border-bottom:1px solid black
+}
+.smallWidth {
+  width: 0.1in
+}
+.mediumWidth {
+  width:0.25in
+}
+.inline {
+  display:inline-block
+}

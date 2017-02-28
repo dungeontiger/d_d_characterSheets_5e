@@ -1,0 +1,29 @@
+{
+  "name": "d_d_charactersheets_5e",
+  "version": "1.0.0",
+  "description": "Creates printable HTML 5th edition D&D Character Sheets from JSON",
+  "main": "app.js",
+  "scripts": {
+    "test": "test",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dungeontiger/d_d_characterSheets_5e.git"
+  },
+  "keywords": [
+    "D&D",
+    "5e",
+    "character"
+  ],
+  "author": "Stephen D. Gibson",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/dungeontiger/d_d_characterSheets_5e/issues"
+  },
+  "homepage": "https://github.com/dungeontiger/d_d_characterSheets_5e#readme",
+  "dependencies": {
+    "express": "^4.14.1",
+    "mustache": "^2.3.0"
+  }
+}
