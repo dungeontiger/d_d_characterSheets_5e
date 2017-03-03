@@ -7,6 +7,7 @@ var races = [];
 races['human'] = require('./rules/human.json');
 var classes = [];
 classes['cleric'] = require('./rules/cleric.json');
+var skills = require('./rules/skills.json');
 
 var app = express();
 
@@ -105,6 +106,8 @@ app.renderCharacter = function(character, res) {
   output += app.combatStats(character);
   // ability scores and saving Throws
   output += app.abilityScoresSavingThrows(character);
+  // skills
+  output += app.skills(character);
   output += '</body>';
   output+= '</html>';
   res.send(output);
@@ -186,7 +189,11 @@ app.addCalculations = function(c) {
   }
   // hit dice
   c.hitDice = c.level + 'd' + playerClass.hitDice;
-
+  // skills
+  c.skills = [];
+  for (var skill in skills) {
+    c.skills.push(skills[skill]);
+  }
 };
 
 app.modStr = function(mod) {
@@ -324,5 +331,16 @@ app.abilityScoresSavingThrows = function(c) {
       </tr>
     </table>
    `;
+  return mustache.render(t, c);
+};
+
+app.skills = function(c) {
+  var t = `
+    <div class="header">Skills</div>
+    <table class="tableBox">
+    {{#skills}}
+      <tr><td>{{ability}}</td><td>{{name}}</td></tr>
+    {{/skills}}
+  `;
   return mustache.render(t, c);
 };

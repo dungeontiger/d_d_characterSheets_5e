@@ -8,6 +8,7 @@
   "experience": 750,
   "hitPoints": 34,
   "languages": ["Orc"],
+  "skills": ["History", "Medicine"],
   "str": 5,
   "dex": 13,
   "con": 18,

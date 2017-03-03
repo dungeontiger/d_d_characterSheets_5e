@@ -1,0 +1,74 @@
+{
+  "Acrobatics": {
+    "name": "Acrobatics",
+    "ability": "dex"
+  },
+  "Animal Handling": {
+    "name": "Animal Handling",
+    "ability": "wis"
+  },
+  "Arcana" : {
+    "name": "Arcana",
+    "ability": "int"
+  },
+  "Athletics": {
+    "name": "Athletics",
+    "ability":"str"
+  },
+  "Deception": {
+    "name": "Deception",
+    "ability": "cha"
+  },
+  "History": {
+    "name": "History",
+    "ability": "int"
+  },
+  "Insight": {
+    "name": "Insight",
+    "ability": "wis"
+  },
+  "Intimidation": {
+    "name": "Intimidation",
+    "ability": "cha"
+  },
+  "Investigation": {
+    "name": "Investigation",
+    "ability": "int"
+  },
+  "Medicine": {
+    "name": "Medicine",
+    "ability": "wis"
+  },
+  "Nature": {
+    "name": "Nature",
+    "ability": "int"
+  },
+  "Perception": {
+    "name": "Perception",
+    "ability": "cha"
+  },
+  "Performance": {
+    "name": "Performance",
+    "ability": "cha"
+  },
+  "Persuasion": {
+    "name": "Persuasion",
+    "ability": "cha"
+  },
+  "Religion": {
+    "name": "Religion",
+    "ability": "int"
+  },
+  "Sleight of Hand": {
+    "name": "Sleight of Hand",
+    "ability": "dex"
+  },
+  "Stealth": {
+    "name": "Stealth",
+    "ability": "dex"
+  },
+  "Survival": {
+    "name": "Survival",
+    "ability": "wis"
+  }
+}
