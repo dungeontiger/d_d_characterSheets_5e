@@ -4,9 +4,9 @@ var mustache = require('mustache');
 
 // D&D data files
 var races = [];
-races['human'] = require('./human.json');
+races['human'] = require('./rules/human.json');
 var classes = [];
-classes['cleric'] = require('./cleric.json');
+classes['cleric'] = require('./rules/cleric.json');
 
 var app = express();
 
@@ -89,7 +89,7 @@ app.renderCharacter = function(character, res) {
   // title
   output += '<title>' + character.name + '</title>';
   // font includes
-  output += '<link href="https://fonts.googleapis.com/css?family=Cinzel|Great+Vibes|Old+Standard+TT" rel="stylesheet">';
+  output += '<link href="https://fonts.googleapis.com/css?family=UnifrakturMaguntia|Cinzel|Great+Vibes|Old+Standard+TT" rel="stylesheet">';
   // css include
   output += '<link rel="stylesheet" href="/css/character.css">';
   output += '</head>';
@@ -111,6 +111,8 @@ app.renderCharacter = function(character, res) {
 };
 
 app.addCalculations = function(c) {
+  var race = races[c.race.toLowerCase()];
+  var playerClass = classes[c.class.toLowerCase()];
   // level
   for (var i = 0; i < app.exp.length; i++) {
     if ( app.exp[i] >= c.experience) {
@@ -134,16 +136,65 @@ app.addCalculations = function(c) {
   // proficiency Bonus
   c.profBonus = app.profBonus[c.level - 1];
   // ability modifier strings
-  c.strStr = app.abilityMods[c.str - 1] > 0 ? '+' + app.abilityMods[c.str - 1] : app.abilityMods[c.str - 1];
-  c.dexStr = app.abilityMods[c.dex - 1] > 0 ? '+' + app.abilityMods[c.dex - 1] : app.abilityMods[c.dex - 1];
-  c.conStr = app.abilityMods[c.con - 1] > 0 ? '+' + app.abilityMods[c.con - 1] : app.abilityMods[c.con - 1];
-  c.intStr = app.abilityMods[c.int - 1] > 0 ? '+' + app.abilityMods[c.int - 1] : app.abilityMods[c.int - 1];
-  c.wisStr = app.abilityMods[c.wis - 1] > 0 ? '+' + app.abilityMods[c.wis - 1] : app.abilityMods[c.wis - 1];
-  c.chaStr = app.abilityMods[c.cha - 1] > 0 ? '+' + app.abilityMods[c.cha - 1] : app.abilityMods[c.cha - 1];
+  c.strStr = app.modStr(app.abilityMods[c.str - 1]);
+  c.dexStr = app.modStr(app.abilityMods[c.dex - 1]);
+  c.conStr = app.modStr(app.abilityMods[c.con - 1]);
+  c.intStr = app.modStr(app.abilityMods[c.int - 1]);
+  c.wisStr = app.modStr(app.abilityMods[c.wis - 1]);
+  c.chaStr = app.modStr(app.abilityMods[c.cha - 1]);
   // race abilities
-  var race = races[c.race.toLowerCase()];
   c.speed = race.speed;
+  c.size = race.size;
+  for (var i = 0; i < race.languages.length; i++) {
+    c.languages.push(race.languages[i]);
+  }
+  // save proficiencies
+  c.savingThrowProficiencies = {};
+  for (var i = 0; i < playerClass.savingThrowProficiencies.length; i++) {
+    c.savingThrowProficiencies[playerClass.savingThrowProficiencies[i]] = true;
+  }
+  // save numbers
+  if (c.savingThrowProficiencies.str) {
+    c.strSaveStr = app.modStr(app.abilityMods[c.str - 1] + c.profBonus);
+  } else {
+    c.strSaveStr = app.modStr(app.abilityMods[c.str - 1]);
+  }
+  if (c.savingThrowProficiencies.dex) {
+    c.dexSaveStr = app.modStr(app.abilityMods[c.dex - 1] + c.profBonus);
+  } else {
+    c.dexSaveStr = app.modStr(app.abilityMods[c.dex - 1]);
+  }
+  if (c.savingThrowProficiencies.con) {
+    c.conSaveStr = app.modStr(app.abilityMods[c.con- 1] + c.profBonus);
+  } else {
+    c.conSaveStr = app.modStr(app.abilityMods[c.con - 1]);
+  }
+  if (c.savingThrowProficiencies.int) {
+    c.intSaveStr = app.modStr(app.abilityMods[c.int - 1] + c.profBonus);
+  } else {
+    c.intSaveStr = app.modStr(app.abilityMods[c.int - 1]);
+  }
+  if (c.savingThrowProficiencies.wis) {
+    c.wisSaveStr = app.modStr(app.abilityMods[c.wis - 1] + c.profBonus);
+  } else {
+    c.wisSaveStr = app.modStr(app.abilityMods[c.wis - 1]);
+  }
+  if (c.savingThrowProficiencies.cha) {
+    c.chaSaveStr = app.modStr(app.abilityMods[c.cha - 1] + c.profBonus);
+  } else {
+    c.chaSaveStr = app.modStr(app.abilityMods[c.cha - 1]);
+  }
+  // hit dice
+  c.hitDice = c.level + 'd' + playerClass.hitDice;
+
 };
+
+app.modStr = function(mod) {
+  if (mod > 0) {
+    return '+' + mod;
+  }
+  return '' + mod;
+}
 
 // header
 app.header = function() {
@@ -191,6 +242,16 @@ app.introBlock = function(c) {
         <td class="label">Experience</td>
        </tr>
     </table>
+    <table class="tableBox">
+      <tr class="tableValueBox">
+        <td>{{size}}</td>
+        <td>{{languages}}</td>
+      </tr>
+      <tr>
+        <td class="label">Size</td>
+        <td class="label">Languages</td>
+      </tr>
+    </table>
 `;
   return mustache.render(t, c);
 };
@@ -203,9 +264,9 @@ app.combatStats = function(c) {
       <tr class="tableValueBox">
         <td class="oneEight">+{{profBonus}}</td>
         <td class="oneEight"></td>
-        <td class="oneEight"></td>
-        <td class="oneEight"></td>
-        <td class="oneEight"></td>
+        <td class="oneEight">{{dexStr}}</td>
+        <td class="oneEight">{{hitDice}}</td>
+        <td class="oneEight">{{hitPoints}}</td>
         <td class="oneEight">{{speed}}</td>
         <td class="oneEight"></td>
         <td class="oneEight"></td>
@@ -240,12 +301,12 @@ app.abilityScoresSavingThrows = function(c) {
         <td class="one12th">{{int}} ({{intStr}})</td>
         <td class="one12th">{{wis}} ({{wisStr}})</td>
         <td class="one12th">{{cha}} ({{chaStr}})</td>
-        <td class="one12th"></td>
-        <td class="one12th"></td>
-        <td class="one12th"></td>
-        <td class="one12th"></td>
-        <td class="one12th"></td>
-        <td class="one12th"></td>
+        <td class="one12th">{{strSaveStr}}</td>
+        <td class="one12th">{{dexSaveStr}}</td>
+        <td class="one12th">{{conSaveStr}}</td>
+        <td class="one12th">{{intSaveStr}}</td>
+        <td class="one12th">{{wisSaveStr}}</td>
+        <td class="one12th">{{chaSaveStr}}</td>
      </tr>
       <tr>
         <td class="label">Str</td>
@@ -254,12 +315,12 @@ app.abilityScoresSavingThrows = function(c) {
         <td class="label">Int</td>
         <td class="label">Wis</td>
         <td class="label">Cha</td>
-        <td class="label"><div class="inline smallWidth bottomBorder"></div> Str</td>
-        <td class="label"><div class="inline smallWidth bottomBorder"></div> Dex</td>
-        <td class="label"><div class="inline smallWidth bottomBorder"></div> Con</td>
-        <td class="label"><div class="inline smallWidth bottomBorder"></div> Int</td>
-        <td class="label"><div class="inline smallWidth bottomBorder"></div> Wis</td>
-        <td class="label"><div class="inline smallWidth bottomBorder"></div> Cha</td>
+        <td class="label"><div class="inline smallWidth bottomBorder">{{#savingThrowProficiencies.str}}x{{/savingThrowProficiencies.str}}</div> Str</td>
+        <td class="label"><div class="inline smallWidth bottomBorder">{{#savingThrowProficiencies.dex}}x{{/savingThrowProficiencies.dex}}</div> Dex</td>
+        <td class="label"><div class="inline smallWidth bottomBorder">{{#savingThrowProficiencies.con}}x{{/savingThrowProficiencies.con}}</div> Con</td>
+        <td class="label"><div class="inline smallWidth bottomBorder">{{#savingThrowProficiencies.int}}x{{/savingThrowProficiencies.int}}</div> Int</td>
+        <td class="label"><div class="inline smallWidth bottomBorder">{{#savingThrowProficiencies.wis}}x{{/savingThrowProficiencies.wis}}</div> Wis</td>
+        <td class="label"><div class="inline smallWidth bottomBorder">{{#savingThrowProficiencies.cha}}x{{/savingThrowProficiencies.cha}}</div> Cha</td>
       </tr>
     </table>
    `;
