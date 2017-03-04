@@ -153,6 +153,17 @@ app.addCalculations = function(c) {
   for (var i = 0; i < race.languages.length; i++) {
     c.languages.push(race.languages[i]);
   }
+  c.languages.sort();
+  c.languageStr = function() {
+    var r = "";
+    for (var i = 0; i < c.languages.length; i++) {
+      r += c.languages[i];
+      if (i < c.languages.length - 1) {
+        r += ', ';
+      }
+    }
+    return r;
+  }
   // save proficiencies
   c.savingThrowProficiencies = {
     'str': '&#9723;',
@@ -210,6 +221,15 @@ app.addCalculations = function(c) {
       s.modifier = app.modStr(app.abilityMods[c[s.ability] - 1]);
     }
     c.allSkills.push(s);
+  }
+  // temporary hit dice
+  // TODO: Wrap if high level
+  c.currentHD = function() {
+    var r = '';
+    for (var i = 0; i < c.level; i++) {
+      r += '&#9723;';
+    }
+    return r;
   }
 };
 
@@ -269,7 +289,7 @@ app.introBlock = function(c) {
     <table class="tableBox">
       <tr class="tableValueBox">
         <td>{{size}}</td>
-        <td>{{languages}}</td>
+        <td>{{languageStr}}</td>
       </tr>
       <tr>
         <td class="label">Size</td>
@@ -353,11 +373,62 @@ app.abilityScoresSavingThrows = function(c) {
 
 app.skills = function(c) {
   var t = `
-    <table class="tableBox">
-    <tr><td colspan='3'><div class="header">Skills</div></td></tr>
-    {{#allSkills}}
-      <tr><td>{{{checked}}}</td><td>{{modifier}}</td><td class="small">{{name}} ({{ability}})</td></tr>
-    {{/allSkills}}
+    <table>
+      <tr>
+        <td><div class="header">Skills</div></td>
+        <td style="width:100%"></td>
+        <td><div class="header">Current Stats</div></td>
+      </tr>
+      <tr>
+        <td>
+          <table class="tableBox">
+            {{#allSkills}}
+            <tr>
+              <td>{{{checked}}}</td><td>{{modifier}}</td><td class="small">{{name}} ({{ability}})</td>
+            </tr>
+            {{/allSkills}}
+          </table>
+        </td>
+        <td></td>
+        <td valign="top">
+          <table>
+            <tr class="tableValueBox">
+              <td></td>
+            </tr>
+            <tr>
+              <td class="label">HP</td>
+            </tr>
+            <tr class="tableValueBox">
+              <td>{{{currentHD}}}</td>
+            </tr>
+            <tr>
+              <td class="label">HD</td>
+            </tr>
+            <tr class="tableValueBox">
+              <td></td>
+            </tr>
+            <tr>
+              <td class="label">Experience</td>
+            </tr>
+            <tr class="tableValueBox">
+              <td>
+                <table>
+                  <tr>
+                    <td class="small">Success:</td><td>&#9723;&#9723;&#9723;</td>
+                  </tr>
+                  <tr>
+                    <td class="small">Failures:</td><td>&#9723;&#9723;&#9723;</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">Death Saves</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
   `;
   return mustache.render(t, c);
 };

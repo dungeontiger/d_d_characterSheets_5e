@@ -10,21 +10,24 @@ body {
 .title {
   font-size:32pt;
   font-family: 'UnifrakturMaguntia', cursive;
+  white-space: nowrap
 }
 .small {
   text-transform: uppercase;
   font-size:8pt;
+  white-space: nowrap;
 }
 .label {
   text-transform: uppercase;
   font-size:8pt;
-  border-top: 1px solid black
+  border-top: 1px solid black;
+  white-space: nowrap
 }
 .tableBox {
   width:100%
 }
 .tableValueBox {
-  height:0.2in
+  height:1.25em
 }
 .oneThird {
   width:33%
@@ -39,7 +42,8 @@ body {
   text-align:center;
   font-size:14pt;
   text-transform: uppercase;
-  padding-top:10px
+  padding-top:10px;
+  white-space: nowrap
 }
 .larger {
   font-size: 10pt
