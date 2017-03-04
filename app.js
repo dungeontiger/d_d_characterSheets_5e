@@ -8,6 +8,7 @@ races['human'] = require('./rules/human.json');
 var classes = [];
 classes['cleric'] = require('./rules/cleric.json');
 var skills = require('./rules/skills.json');
+var backgrounds = require('./rules/backgrounds.json');
 
 var app = express();
 
@@ -116,6 +117,7 @@ app.renderCharacter = function(character, res) {
 app.addCalculations = function(c) {
   var race = races[c.race.toLowerCase()];
   var playerClass = classes[c.class.toLowerCase()];
+  var background = backgrounds[c.background.toLowerCase()];
   // level
   for (var i = 0; i < app.exp.length; i++) {
     if ( app.exp[i] >= c.experience) {
@@ -152,9 +154,16 @@ app.addCalculations = function(c) {
     c.languages.push(race.languages[i]);
   }
   // save proficiencies
-  c.savingThrowProficiencies = {};
+  c.savingThrowProficiencies = {
+    'str': '&#9723;',
+    'dex': '&#9723;',
+    'con': '&#9723;',
+    'int': '&#9723;',
+    'wis': '&#9723;',
+    'cha': '&#9723;'
+  };
   for (var i = 0; i < playerClass.savingThrowProficiencies.length; i++) {
-    c.savingThrowProficiencies[playerClass.savingThrowProficiencies[i]] = true;
+    c.savingThrowProficiencies[playerClass.savingThrowProficiencies[i]] = '&#9724;';
   }
   // save numbers
   if (c.savingThrowProficiencies.str) {
@@ -190,9 +199,17 @@ app.addCalculations = function(c) {
   // hit dice
   c.hitDice = c.level + 'd' + playerClass.hitDice;
   // skills
-  c.skills = [];
+  c.allSkills = [];
   for (var skill in skills) {
-    c.skills.push(skills[skill]);
+    var s = skills[skill];
+    if (c.skills.indexOf(s.name) != -1 || background.skills.indexOf(s.name) != -1) {
+      s.checked = '&#9724;';
+      s.modifier = app.modStr(app.abilityMods[c[s.ability] - 1] + c.profBonus);
+    } else {
+      s.checked = '&#9723;';
+      s.modifier = app.modStr(app.abilityMods[c[s.ability] - 1]);
+    }
+    c.allSkills.push(s);
   }
 };
 
@@ -322,12 +339,12 @@ app.abilityScoresSavingThrows = function(c) {
         <td class="label">Int</td>
         <td class="label">Wis</td>
         <td class="label">Cha</td>
-        <td class="label"><div class="inline smallWidth bottomBorder">{{#savingThrowProficiencies.str}}x{{/savingThrowProficiencies.str}}</div> Str</td>
-        <td class="label"><div class="inline smallWidth bottomBorder">{{#savingThrowProficiencies.dex}}x{{/savingThrowProficiencies.dex}}</div> Dex</td>
-        <td class="label"><div class="inline smallWidth bottomBorder">{{#savingThrowProficiencies.con}}x{{/savingThrowProficiencies.con}}</div> Con</td>
-        <td class="label"><div class="inline smallWidth bottomBorder">{{#savingThrowProficiencies.int}}x{{/savingThrowProficiencies.int}}</div> Int</td>
-        <td class="label"><div class="inline smallWidth bottomBorder">{{#savingThrowProficiencies.wis}}x{{/savingThrowProficiencies.wis}}</div> Wis</td>
-        <td class="label"><div class="inline smallWidth bottomBorder">{{#savingThrowProficiencies.cha}}x{{/savingThrowProficiencies.cha}}</div> Cha</td>
+        <td class="label"><div class="inline smallWidth">{{{savingThrowProficiencies.str}}}</div> Str</td>
+        <td class="label"><div class="inline smallWidth">{{{savingThrowProficiencies.dex}}}</div> Dex</td>
+        <td class="label"><div class="inline smallWidth">{{{savingThrowProficiencies.con}}}</div> Con</td>
+        <td class="label"><div class="inline smallWidth">{{{savingThrowProficiencies.int}}}</div> Int</td>
+        <td class="label"><div class="inline smallWidth">{{{savingThrowProficiencies.wis}}}</div> Wis</td>
+        <td class="label"><div class="inline smallWidth">{{{savingThrowProficiencies.cha}}}</div> Cha</td>
       </tr>
     </table>
    `;
@@ -336,11 +353,11 @@ app.abilityScoresSavingThrows = function(c) {
 
 app.skills = function(c) {
   var t = `
-    <div class="header">Skills</div>
     <table class="tableBox">
-    {{#skills}}
-      <tr><td>{{ability}}</td><td>{{name}}</td></tr>
-    {{/skills}}
+    <tr><td colspan='3'><div class="header">Skills</div></td></tr>
+    {{#allSkills}}
+      <tr><td>{{{checked}}}</td><td>{{modifier}}</td><td class="small">{{name}} ({{ability}})</td></tr>
+    {{/allSkills}}
   `;
   return mustache.render(t, c);
 };
