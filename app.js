@@ -233,18 +233,20 @@ app.addCalculations = function(c) {
     return r;
   }
   // armor class
+  if (c.armor) {
+      c.armorObj = armor[c.armor];
+  }
   c.ac = function() {
     // TODO: wearing armor you are not proficient in has serious repercussions on abilities and movement
     // also notes and limitations
     var ac = 0;
     // look for a base armor type first
-    if (c.armor) {
-      var a = armor[c.armor];
-      ac = a.ac;
+    if (c.armorObj) {
+      ac = c.armorObj.ac;
       var dexMod = app.abilityMods[c.dex - 1];
-      if (a.dex == 'modifier') {
+      if (c.armorObj.dex == 'modifier') {
         ac += dexMod;
-      } else if (a.dex = 'modifier max 2') {
+      } else if (c.armorObj.dex = 'modifier max 2') {
         if (dexMod > 2) {
           dexMod = 2;
         }
@@ -257,6 +259,26 @@ app.addCalculations = function(c) {
       ac += armor['Shield'].acMod;
     }
     return ac;
+  }
+  // proficiencies, abilities and features
+  // TODO: race features
+  c.features = [];
+  for (var i = 0; i < playerClass.armorProficiencies.length; i++) {
+    c.features.push(playerClass.armorProficiencies[i]);
+  }
+  for (var i = 0; i < playerClass.weaponProficiencies.length; i++) {
+    c.features.push(playerClass.weaponProficiencies[i]);
+  }
+  for (var i = 0; i < playerClass.toolProficiencies.length; i++) {
+    c.features.push(playerClass.toolProficiencies[i]);
+  }
+  if (c.armorObj) {
+    if (c.armorObj.stealth == 'disadvantage') {
+      c.features.push('Disadvantage on stealth rules due to armor');
+    }
+  }
+  if (background.feature) {
+    c.features.push(background.feature);
   }
 };
 
@@ -401,7 +423,7 @@ app.skills = function(c) {
     <table>
       <tr>
         <td><div class="header">Skills</div></td>
-        <td style="width:100%"></td>
+        <td style="width:100%" class="header">Proficiencies, Abilities &amp; Features</td>
         <td><div class="header">Current Stats</div></td>
       </tr>
       <tr>
@@ -414,7 +436,13 @@ app.skills = function(c) {
             {{/allSkills}}
           </table>
         </td>
-        <td></td>
+        <td valign="top">
+          <table>
+            {{#features}}
+            <tr><td>{{.}}</td></tr>
+            {{/features}}
+          </table>
+        </td>
         <td valign="top">
           <table>
             <tr class="tableValueBox">

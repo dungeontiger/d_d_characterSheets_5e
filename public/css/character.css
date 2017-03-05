@@ -57,6 +57,9 @@ body {
 .mediumWidth {
   width:0.25in
 }
+.underline {
+  border-bottom:solid black 1px
+}
 .inline {
   display:inline-block
 }

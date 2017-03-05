@@ -1,5 +1,6 @@
 {
   "sage": {
-    "skills" : [ "Arcana", "History"]
+    "skills" : [ "Arcana", "History"],
+    "feature" : "Researcher: If you don't know a piece of lore or an answer to a question you often know where to find it."
   }
 }

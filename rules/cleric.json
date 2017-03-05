@@ -3,13 +3,12 @@
   "armorProficiencies": [
     "Light Armor",
     "Medium Armor",
-    "Shields",
-    "Simple Weapons"
+    "Shields"
   ],
   "weaponProficiencies": [
     "Simple Weapons"
   ],
-  "tools": [
+  "toolProficiencies": [
 
   ],
   "savingThrowProficiencies": [
