@@ -1,0 +1,102 @@
+{
+  "Padded" : {
+    "type": "light",
+    "cost": { "gp": 5},
+    "ac": 11,
+    "dex": "modifier",
+    "stealth": "disadvantage",
+    "weight": 8
+  },
+  "Leather" : {
+    "type": "light",
+    "cost": { "gp": 10},
+    "ac": 11,
+    "dex": "modifier",
+    "weight": 10
+  },
+  "Studded leather" : {
+    "type": "light",
+    "cost": { "gp": 45},
+    "ac": 12,
+    "dex": "modifier",
+    "weight": 13
+  },
+    "Hide" : {
+    "type": "medium",
+    "cost": { "gp": 10},
+    "ac": 12,
+    "dex": "modifier max 2",
+    "weight": 12
+  },
+    "Chain shirt" : {
+    "type": "medium",
+    "cost": { "gp": 50},
+    "ac": 13,
+    "dex": "modifier max 2",
+    "weight": 20
+  },
+    "Scale mail" : {
+    "type": "medium",
+    "cost": { "gp": 50},
+    "ac": 14,
+    "dex": "modifier max 2",
+    "stealth": "disadvantage",
+    "weight": 45
+  }, 
+    "Breastplate" : {
+    "type": "medium",
+    "cost": { "gp": 400},
+    "ac": 14,
+    "dex": "modifier max 2",
+    "weight": 20
+  },
+    "Half plate" : {
+    "type": "medium",
+    "cost": { "gp": 750},
+    "ac": 15,
+    "dex": "modifier max 2",
+    "stealth": "disadvantage",
+    "weight": 40
+  },
+    "Ring mail" : {
+    "type": "heavy",
+    "cost": { "gp": 30},
+    "ac": 14,
+    "dex": "none",
+    "stealth": "disadvantage",
+    "weight": 40
+  },
+    "Chain mail" : {
+    "type": "heavy",
+    "cost": { "gp": 75},
+    "ac": 16,
+    "str": 13,
+    "dex": "none",
+    "stealth": "disadvantage",
+    "weight": 55
+  },
+    "Splint" : {
+    "type": "heavy",
+    "cost": { "gp": 200},
+    "ac": 17,
+    "str": 15,
+    "dex": "none",
+    "stealth": "disadvantage",
+    "weight": 60
+  },
+    "Plate" : {
+    "type": "heavy",
+    "cost": { "gp": 1500},
+    "ac": 18,
+    "str": 15,
+    "dex": "none",
+    "stealth": "disadvantage",
+    "weight": 65
+  },
+    "Shield" : {
+    "type": "shield",
+    "cost": { "gp": 10},
+    "acMod": 2,
+    "weight": 6
+  }
+}

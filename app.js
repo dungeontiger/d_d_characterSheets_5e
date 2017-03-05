@@ -9,6 +9,7 @@ var classes = [];
 classes['cleric'] = require('./rules/cleric.json');
 var skills = require('./rules/skills.json');
 var backgrounds = require('./rules/backgrounds.json');
+var armor = require('./rules/armor.json');
 
 var app = express();
 
@@ -148,7 +149,7 @@ app.addCalculations = function(c) {
   c.wisStr = app.modStr(app.abilityMods[c.wis - 1]);
   c.chaStr = app.modStr(app.abilityMods[c.cha - 1]);
   // race abilities
-  c.speed = race.speed;
+  c.speed = race.speed; // TODO: possibly affected by armor
   c.size = race.size;
   for (var i = 0; i < race.languages.length; i++) {
     c.languages.push(race.languages[i]);
@@ -231,6 +232,32 @@ app.addCalculations = function(c) {
     }
     return r;
   }
+  // armor class
+  c.ac = function() {
+    // TODO: wearing armor you are not proficient in has serious repercussions on abilities and movement
+    // also notes and limitations
+    var ac = 0;
+    // look for a base armor type first
+    if (c.armor) {
+      var a = armor[c.armor];
+      ac = a.ac;
+      var dexMod = app.abilityMods[c.dex - 1];
+      if (a.dex == 'modifier') {
+        ac += dexMod;
+      } else if (a.dex = 'modifier max 2') {
+        if (dexMod > 2) {
+          dexMod = 2;
+        }
+        ac += dexMod;
+      }
+    } else {
+      ac = 10 + app.abilityMods[c.dex - 1];
+    }
+    if (c.shield) {
+      ac += armor['Shield'].acMod;
+    }
+    return ac;
+  }
 };
 
 app.modStr = function(mod) {
@@ -312,18 +339,16 @@ app.combatStats = function(c) {
         <td class="oneEight">{{hitDice}}</td>
         <td class="oneEight">{{hitPoints}}</td>
         <td class="oneEight">{{speed}}</td>
-        <td class="oneEight"></td>
-        <td class="oneEight"></td>
+        <td class="oneEight">{{ac}}</td>
       </tr>
       <tr>
         <td class="label">Prof. Bonus</td>
         <td class="label">Inspiration</td>
         <td class="label">Initiative</td>
         <td class="label">HD</td>
-        <td class="label">Max HP</td>
+        <td class="label">HP</td>
         <td class="label">Spd</td>
         <td class="label">AC</td>
-        <td class="label">Cur HP</td>
       </tr>
     </table>
   `;

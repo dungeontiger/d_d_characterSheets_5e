@@ -3,6 +3,7 @@
   "playerName": "NPC: Stephen D. Gibson",
   "race": "Human",
   "class": "Cleric",
+  "domain": "Life",
   "background": "Sage",
   "alignment": "Chaotic Good",
   "experience": 750,
@@ -14,5 +15,7 @@
   "con": 18,
   "int": 13,
   "wis": 14,
-  "cha": 13
+  "cha": 13,
+  "armor": "Chain shirt",
+  "shield": false
 }
