@@ -201,5 +201,233 @@
 			"reach": true,
 			"two-handed": true
 		}
+	},
+	"Greataxe": {
+		"name": "Greataxe",
+		"type": "Martial Melee",
+		"cost": {"gp":30},
+		"damage" : "1d12",
+		"damageType": "slashing",
+		"weight": 7,
+		"properties" : {
+			"heavy": true,
+			"two-handed": true
+		}
+	},
+	"Halberd": {
+		"name": "Halberd",
+		"type": "Martial Melee",
+		"cost": {"gp":20},
+		"damage" : "1d10",
+		"damageType": "slashing",
+		"weight": 6,
+		"properties" : {
+			"heavy": true,
+			"two-handed": true,
+			"reach": true
+		}
+	},
+	"Lance": {
+		"name": "Lance",
+		"type": "Martial Melee",
+		"cost": {"gp":10},
+		"damage" : "1d12",
+		"damageType": "piercing",
+		"weight": 6,
+		"properties" : {
+			"special": true,
+			"reach": true
+		}
+	},
+	"Longsword": {
+		"name": "Longsword",
+		"type": "Martial Melee",
+		"cost": {"gp":15},
+		"damage" : "1d8",
+		"damageType": "slashing",
+		"weight": 3,
+		"properties" : {
+			"versatile": "1d10"
+		}
+	},
+	"Maul": {
+		"name": "Maul",
+		"type": "Martial Melee",
+		"cost": {"gp":10},
+		"damage" : "2d6",
+		"damageType": "bludgeoning",
+		"weight": 10,
+		"properties" : {
+			"heavy": true,
+			"two-handed":true
+		}
+	},
+	"Morningstar": {
+		"name": "Morningstar",
+		"type": "Martial Melee",
+		"cost": {"gp":15},
+		"damage" : "1d8",
+		"damageType": "piercing",
+		"weight": 4,
+		"properties" : {
+		}
+	},
+	"Pike": {
+		"name": "Pike",
+		"type": "Martial Melee",
+		"cost": {"gp":5},
+		"damage" : "1d10",
+		"damageType": "piercing",
+		"weight": 18,
+		"properties" : {
+			"heavy": true,
+			"reach": true,
+			"two-handed": true
+		}
+	},
+	"Rapier": {
+		"name": "Rapier",
+		"type": "Martial Melee",
+		"cost": {"gp":25},
+		"damage" : "1d8",
+		"damageType": "piercing",
+		"weight": 2,
+		"properties" : {
+			"finesse": true
+		}
+	},
+	"Scimitar": {
+		"name": "Scimitar",
+		"type": "Martial Melee",
+		"cost": {"gp":25},
+		"damage" : "1d6",
+		"damageType": "slashing",
+		"weight": 3,
+		"properties" : {
+			"finesse": true,
+			"light": true
+		}
+	},
+	"Shortsword": {
+		"name": "Shortsward",
+		"type": "Martial Melee",
+		"cost": {"gp":10},
+		"damage" : "1d6",
+		"damageType": "piercing",
+		"weight": 2,
+		"properties" : {
+			"finesse": true,
+			"light": true
+		}
+	},
+	"Trident": {
+		"name": "Trident",
+		"type": "Martial Melee",
+		"cost": {"gp":5},
+		"damage" : "1d6",
+		"damageType": "piercing",
+		"weight": 2,
+		"range": "20/60",
+		"properties" : {
+			"versatile": "1d10"
+		}
+	},
+	"War pick": {
+		"name": "War pick",
+		"type": "Martial Melee",
+		"cost": {"gp":5},
+		"damage" : "1d8",
+		"damageType": "piercing",
+		"weight": 2,
+		"range": "20/60",
+		"properties" : {
+		}
+	},
+	"Warhammer": {
+		"name": "Warhammer",
+		"type": "Martial Melee",
+		"cost": {"gp":15},
+		"damage" : "1d8",
+		"damageType": "blugeoning",
+		"weight": 2,
+		"properties" : {
+			"versatile": "1d10"
+		}
+	},
+	"Whip": {
+		"name": "Whip",
+		"type": "Martial Melee",
+		"cost": {"gp":2},
+		"damage" : "1d4",
+		"damageType": "slashing",
+		"weight": 3,
+		"properties" : {
+			"finesse": true,
+			"reach": true
+		}
+	},
+	"Blowgun": {
+		"name": "Blowgun",
+		"type": "Martial Ranged",
+		"cost": {"gp":10},
+		"damage" : "1",
+		"damageType": "piercing",
+		"weight": 1,
+		"range": "25/100",
+		"properties" : {
+			"loading": true
+		}
+	},
+	"Hand crossbow": {
+		"name": "Hand crossbow",
+		"type": "Martial Ranged",
+		"cost": {"gp":75},
+		"damage" : "1d6",
+		"damageType": "piercing",
+		"weight": 3,
+		"range": "30/120",
+		"properties" : {
+			"loading": true,
+			"light": true
+		}
+	},
+	"Heavy crossbow": {
+		"name": "Heavy crossbow",
+		"type": "Martial Ranged",
+		"cost": {"gp":50},
+		"damage" : "1d10",
+		"damageType": "piercing",
+		"weight": 18,
+		"range": "100/400",
+		"properties" : {
+			"loading": true,
+			"heavy": true,
+			"two-handed": true
+		}
+	},
+	"Longbow": {
+		"name": "Longbow",
+		"type": "Martial Ranged",
+		"cost": {"gp":50},
+		"damage" : "1d8",
+		"damageType": "piercing",
+		"weight": 2,
+		"range": "150/600",
+		"properties" : {
+			"heavy": true,
+			"two-handed": true
+		}
+	},
+	"Net": {
+		"name": "Longbow",
+		"type": "Martial Ranged",
+		"cost": {"gp":50},
+		"damage" : "1d8",
+		"damageType": "piercing",
+		"weight": 1,
+		"range": "5/15",
+		"properties" : {
+			"special": true
+		}
 	}
 }
