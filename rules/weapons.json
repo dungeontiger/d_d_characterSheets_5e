@@ -1,0 +1,205 @@
+{
+	"Club" : {
+		"name": "Club",
+		"type": "Simple Melee",
+		"cost": { "sp": 1},
+		"damage" : "1d4",
+		"damageType": "bludgeoning",
+		"weight": 2,
+		"properties" : {
+			"light": true
+		}
+	},
+	"Dagger": {
+		"name": "Dagger",
+		"type": "Simple Melee",
+		"cost": { "gp": 2},
+		"damage" : "1d4",
+		"damageType": "piercing",
+		"weight": 1,
+		"range": "20/60",
+		"properties" : {
+			"light": true,
+			"finesse": true,
+			"thrown": true
+		}
+	},
+	"Greatclub": {
+		"name": "Greatclub",
+		"type": "Simple Melee",
+		"cost": { "sp": 2},
+		"damage" : "1d8",
+		"damageType": "bludgeoning",
+		"weight": 10,
+		"properties" : {
+			"two-handed": true
+		}
+	},
+	"Handaxe": {
+		"name": "Handaxe",
+		"type": "Simple Melee",
+		"cost": { "gp": 5},
+		"damage" : "1d6",
+		"damageType": "slashing",
+		"range": "20/60",
+		"weight": 2,
+		"properties" : {
+			"light": true,
+			"thrown": true
+		}
+	},
+	"Javelin":{
+		"name": "Javelin",
+		"type": "Simple Melee",
+		"cost": { "sp": 5},
+		"damage" : "1d6",
+		"damageType": "piercing",
+		"weight": 2,
+		"range": "30/120",
+		"properties" : {
+			"thrown": true
+		}
+	},
+	"Light hammer": {
+		"name": "Light hammer",
+		"type": "Simple Melee",
+		"cost": { "gp": 2},
+		"damage": "1d4",
+		"damageType": "bludgeoning",
+		"range": "20/60",
+		"weight": 2,
+		"properties": {
+			"light": true,
+			"thrown": true
+		}
+	},
+	"Mace": {
+		"name": "Mace",
+		"type": "Simple Melee",
+		"cost": {"gp": 5},
+		"damage" : "1d6",
+		"damageType": "bludgeoning",
+		"weight": 4,
+		"properties" : {
+		}
+	},
+	"Quarterstaff" : {
+		"name": "Quarterstaff",
+		"type": "Simple Melee",
+		"cost": {"sp": 2},
+		"damage" : "1d6",
+		"damageType": "bludgeoning",
+		"weight": 4,
+		"properties" : {
+			"verstaile": "1d8"
+		}
+	},
+	"Sickle":{
+		"name": "Sickle",
+		"type": "Simple Melee",
+		"cost": {"gp": 1},
+		"damage" : "1d4",
+		"damageType": "slashing",
+		"weight": 2,
+		"properties" : {
+			"light": true
+		}
+	},
+	"Spear": {
+		"name": "Spear",
+		"type": "Simple Melee",
+		"cost": {"gp":1},
+		"damage" : "1d6",
+		"damageType": "piercing",
+		"weight": 3,
+		"range": "20/60",
+		"properties" : {
+			"thrown": true,
+			"versatile": "1d8"
+		}
+	},
+	"Light crossbow": {
+		"name": "Light crossbow",
+		"type": "Simple Ranged",
+		"cost": {"gp":25},
+		"damage" : "1d8",
+		"damageType": "piercing",
+		"weight": 5,
+		"range": "80/320",
+		"properties" : {
+			"ammunition": true,
+			"loading": true,
+			"two-handed": true
+		}
+	},
+	"Dart": {
+		"name": "Dart",
+		"type": "Simple Ranged",
+		"cost": {"cp": 5},
+		"damage" : "1d4",
+		"damageType": "piercing",
+		"weight": 0.25,
+		"range": "20/60",
+		"properties" : {
+			"finesse": true,
+			"thrown": "20/60"
+		}
+	},
+	"Short bow": {
+		"name": "Short bow",
+		"type": "Simple Ranged",
+		"cost": {"gp": 25},
+		"damage" : "1d6",
+		"damageType": "piercing",
+		"weight": 2,
+		"properties" : {
+			"ammunition": "80/320",
+			"two-handed": true
+		}
+	},
+	"Sling": {
+		"name": "Sling",
+		"type": "Simple Ranged",
+		"cost": {"sp":1},
+		"damage" : "1d4",
+		"damageType": "bludgeoning",
+		"weight": 0,
+		"properties" : {
+			"ammunition": "30/120"
+		}
+	},	
+	"Battleaxe": {
+		"name": "Battleaxe",
+		"type": "Martial Melee",
+		"cost": {"gp":10},
+		"damage" : "1d8",
+		"damageType": "slashing",
+		"weight": 4,
+		"properties" : {
+			"versatile": "1d10"
+		}
+	},
+	"Flail": {
+		"name": "Flail",
+		"type": "Martial Melee",
+		"cost": {"gp":10},
+		"damage" : "1d8",
+		"damageType": "bludgeoning",
+		"weight": 2,
+		"properties" : {
+		}
+	},
+	"Glaive": {
+		"name": "Glaive",
+		"type": "Martial Melee",
+		"cost": {"gp":20},
+		"damage" : "1d10",
+		"damageType": "slashing",
+		"weight": 6,
+		"properties" : {
+			"heavy": true,
+			"reach": true,
+			"two-handed": true
+		}
+	}
+}

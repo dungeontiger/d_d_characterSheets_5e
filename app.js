@@ -10,6 +10,7 @@ classes['cleric'] = require('./rules/cleric.json');
 var skills = require('./rules/skills.json');
 var backgrounds = require('./rules/backgrounds.json');
 var armor = require('./rules/armor.json');
+var weapons = require('./rules/weapons.json');
 
 var app = express();
 
@@ -108,8 +109,10 @@ app.renderCharacter = function(character, res) {
   output += app.combatStats(character);
   // ability scores and saving Throws
   output += app.abilityScoresSavingThrows(character);
-  // skills
+  // skills, proficiencies and current stats block
   output += app.skills(character);
+  // weapons
+  output += app.weapons(character);
   output += '</body>';
   output+= '</html>';
   res.send(output);
@@ -263,11 +266,14 @@ app.addCalculations = function(c) {
   // proficiencies, abilities and features
   // TODO: race features
   c.features = [];
+  var weaponProfs = [];
   for (var i = 0; i < playerClass.armorProficiencies.length; i++) {
     c.features.push(playerClass.armorProficiencies[i]);
   }
   for (var i = 0; i < playerClass.weaponProficiencies.length; i++) {
+    // TODO: Racial profs and others
     c.features.push(playerClass.weaponProficiencies[i]);
+    weaponProfs.push(playerClass.weaponProficiencies[i]);
   }
   for (var i = 0; i < playerClass.toolProficiencies.length; i++) {
     c.features.push(playerClass.toolProficiencies[i]);
@@ -279,6 +285,59 @@ app.addCalculations = function(c) {
   }
   if (background.feature) {
     c.features.push(background.feature);
+  }
+  // weapons
+  c.weaponStats = function() {
+    var r = [ ];
+    for (var i = 0; i < c.weapons.length; i++) {
+      var w = {};
+      r.push(w);
+      var weaponStats = weapons[c.weapons[i].name];
+      w.name = weaponStats.name;
+      if (c.weapons[i].ammo) {
+        w.ammo = c.weapons[i].ammo;
+      }
+      w.hit = 0;
+      w.dmgBonus = 0;
+      // if proficient in this weapon or weapon class add prof bonus to hit
+      if (weaponProfs.indexOf(weaponStats.name) != -1 || weaponProfs.indexOf(weaponStats.type) != -1) {
+        w.hit += c.profBonus;
+        w.dmgBonus += c.profBonus;
+      }
+      if (weaponStats.properties.finesse == true) {
+        // add higher bonus of str or dex
+        w.hit += Math.max(app.abilityMods[c.dex - 1], app.abilityMods[c.str - 1]);
+        w.dmgBonus += Math.max(app.abilityMods[c.dex - 1], app.abilityMods[c.str - 1]);
+      } else if (weaponStats.type.indexOf('Melee') != -1) {
+        // add strength mod
+        w.hit += app.abilityMods[c.str - 1];
+        w.dmgBonus += app.abilityMods[c.str - 1];
+      } else if (weaponStats.type.indexOf('Ranged') != -1) {
+        // add dex mod
+        w.hit += app.abilityMods[c.dex - 1]
+        w.dmgBonus += app.abilityMods[c.dex - 1]
+      }
+      w.hit = app.modStr(w.hit);
+      if (w.dmgBonus != 0) {
+        w.damage = weaponStats.damage + app.modStr(w.dmgBonus);
+      } else {
+        w.damage = weaponStats.damage;
+      }
+      w.range = weaponStats.range;
+      w.damageType = weaponStats.damageType;
+      w.type = weaponStats.type;
+      var notes = [];
+      for (var note in weaponStats.properties) {
+        var s = note;
+        if (weaponStats.properties[note] != true) {
+          s += ':' + weaponStats.properties[note];
+        }
+        notes.push(s);
+      }
+      notes.sort();
+      w.notes = notes.join(', ');
+    }
+    return r;
   }
 };
 
@@ -485,3 +544,34 @@ app.skills = function(c) {
   `;
   return mustache.render(t, c);
 };
+
+app.weapons = function(c) {
+  var t = `
+  <div class="header">Weapons</div>
+  <table>
+    <tr>
+      <td class="medium">Name</td>
+      <td class="medium">To Hit</td>
+      <td class="medium">Damage</td>
+      <td class="medium">Ammo</td>
+      <td class="medium">Range</td>
+      <td class="medium">Dmg Type</td>
+      <td class="medium">Type</td>
+      <td class="medium">Notes</td>
+    </tr>
+    {{#weaponStats}}
+    <tr>
+      <td>{{name}}</td>
+      <td>{{hit}}</td>
+      <td>{{damage}}</td>
+      <td>{{ammo}}</td>
+      <td>{{range}}</td>
+      <td>{{damageType}}</td>
+      <td>{{type}}</td>
+      <td>{{notes}}</td>
+    </tr>
+    {{/weaponStats}}
+  </table>
+  `;
+  return mustache.render(t, c);
+}

@@ -17,6 +17,11 @@ body {
   font-size:8pt;
   white-space: nowrap;
 }
+.medium {
+  text-transform: uppercase;
+  font-size:10pt;
+  white-space: nowrap;
+}
 .label {
   text-transform: uppercase;
   font-size:8pt;

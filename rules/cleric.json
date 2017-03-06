@@ -6,7 +6,8 @@
     "Shields"
   ],
   "weaponProficiencies": [
-    "Simple Weapons"
+    "Simple Melee",
+    "Simple Ranged"
   ],
   "toolProficiencies": [
 

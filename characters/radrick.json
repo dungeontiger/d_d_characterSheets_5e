@@ -17,5 +17,17 @@
   "wis": 14,
   "cha": 13,
   "armor": "Chain shirt",
-  "shield": false
+  "shield": false,
+  "weapons": [
+    {
+      "name": "Mace"
+    },
+    {
+      "name": "Battleaxe"
+    },
+    {
+      "name": "Light crossbow",
+      "ammo": 20
+    }
+  ]
 }
