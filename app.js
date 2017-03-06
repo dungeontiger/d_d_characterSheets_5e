@@ -211,6 +211,8 @@ app.addCalculations = function(c) {
   } else {
     c.chaSaveStr = app.modStr(app.abilityMods[c.cha - 1]);
   }
+  // passive Perception
+  c.passivePerception = 10 + app.abilityMods[c.wis - 1];
   // hit dice
   c.hitDice = c.level + 'd' + playerClass.hitDice;
   // skills
@@ -493,6 +495,7 @@ app.skills = function(c) {
               <td>{{{checked}}}</td><td>{{modifier}}</td><td class="small">{{name}} ({{ability}})</td>
             </tr>
             {{/allSkills}}
+            <tr><td></td><td>{{passivePerception}}<td class="small">Passive Perception (wis)</td></tr>
           </table>
         </td>
         <td valign="top">
