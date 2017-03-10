@@ -609,7 +609,7 @@ app.spells = function(c) {
     return '';
   }
   var t = `
-    <div class="newPage title center">Spells</div>
+    <div class="newPage title center screenDivider">Spells</div>
     <table class="tableBox">
       <tr class="tableValueBox">
         <td class="oneThird">{{castingAbility}}</td>
