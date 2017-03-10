@@ -361,13 +361,9 @@ app.addCalculations = function(c) {
   }
   // spell abilities
   if (c.features.indexOf('Spellcasting') != -1) {
-    console.log("here");
     c.castingAbility = playerClass.castingAbility;
     c.spellSaveDC = 8 + c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
     c.spellAttackMod = c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
-    console.log(c.castingAbility);
-    console.log(c.spellSaveDC);
-    console.log(c.spellAttackMod);
   }
 };
 
