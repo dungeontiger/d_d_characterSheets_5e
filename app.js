@@ -11,6 +11,7 @@ var skills = require('./rules/skills.json');
 var backgrounds = require('./rules/backgrounds.json');
 var armor = require('./rules/armor.json');
 var weapons = require('./rules/weapons.json');
+var spells = require('./rules/spells.json');
 
 var app = express();
 
@@ -113,6 +114,8 @@ app.renderCharacter = function(character, res) {
   output += app.skills(character);
   // weapons
   output += app.weapons(character);
+  // spells
+  output += app.spells(character);
   output += '</body>';
   output+= '</html>';
   res.send(output);
@@ -129,6 +132,12 @@ app.addCalculations = function(c) {
     }
   }
   c.level = i;
+  // class description
+  if (c.class == 'Cleric') {
+    c.classDesc = 'Cleric, ' + c.domain + ' Domain';
+  } else {
+    c.classDesc = c.class;
+  }
 
   // level postfix
   if (c.level == 1) {
@@ -285,6 +294,15 @@ app.addCalculations = function(c) {
       c.features.push('Disadvantage on stealth rules due to armor');
     }
   }
+  for (var i = 0; i < playerClass.levelFeatures.length; i++) {
+    // look through each level feature and look for ones that are appropriate
+    var lf = playerClass.levelFeatures[i];
+    if (lf.level <= c.level) {
+      for (var j = 0; j < lf.features.length; j++) {
+        c.features.push(lf.features[j]);
+      }
+    }
+  }
   if (background.feature) {
     c.features.push(background.feature);
   }
@@ -341,6 +359,16 @@ app.addCalculations = function(c) {
     }
     return r;
   }
+  // spell abilities
+  if (c.features.indexOf('Spellcasting') != -1) {
+    console.log("here");
+    c.castingAbility = playerClass.castingAbility;
+    c.spellSaveDC = 8 + c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
+    c.spellAttackMod = c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
+    console.log(c.castingAbility);
+    console.log(c.spellSaveDC);
+    console.log(c.spellAttackMod);
+  }
 };
 
 app.modStr = function(mod) {
@@ -374,7 +402,7 @@ app.introBlock = function(c) {
   var t = `
       <table class="tableBox">
       <tr class="tableValueBox">
-        <td class="oneThird">{{level}}<sup>{{levelStr}}</sup> {{class}}</td>
+        <td class="oneThird">{{level}}<sup>{{levelStr}}</sup> {{classDesc}}</td>
         <td class="oneThird">{{background}}</td>
         <td class="oneThird">{{playerName}}</td>
       </tr>
@@ -577,4 +605,27 @@ app.weapons = function(c) {
   </table>
   `;
   return mustache.render(t, c);
-}
+};
+
+app.spells = function(c) {
+  if (c.features.indexOf('Spellcasting') == -1) {
+    // not a spell casting class
+    return '';
+  }
+  var t = `
+    <div class="newPage title center">Spells</div>
+    <table class="tableBox">
+      <tr class="tableValueBox">
+        <td class="oneThird">{{castingAbility}}</td>
+        <td class="oneThird">{{spellSaveDC}}</td>
+        <td class="oneThird">{{spellAttackMod}}</td>
+      </tr>
+      <tr>
+        <td class="label">Spellcasting Ability</td>
+        <td class="label">Spell Save DC</td>
+        <td class="label">Spell Attack Mod</td>
+      </tr>
+  </table>
+  `;
+  return mustache.render(t, c);
+};

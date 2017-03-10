@@ -1,0 +1,2 @@
+All data files created by hand except for the spell list.  This was taken from:
+https://github.com/jcquinlan/dnd-spells/blob/master/spells.json
