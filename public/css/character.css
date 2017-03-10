@@ -68,3 +68,6 @@ body {
 .inline {
   display:inline-block
 }
+.newPage {
+  page-break-before: always;
+}

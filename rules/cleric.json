@@ -17,6 +17,7 @@
     "cha"
   ],
   "knownSpells" : "wis + level",
+  "castingAbility": "wis",
   "levelFeatures": [
     {
       "level": 1,
