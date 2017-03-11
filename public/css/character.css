@@ -7,7 +7,7 @@ body {
   text-align:center
 }
 .title {
-  font-size:32pt;
+  font-size:36pt;
   font-family: 'UnifrakturMaguntia', cursive;
   white-space: nowrap
 }
@@ -47,7 +47,8 @@ body {
   font-size:14pt;
   text-transform: uppercase;
   padding-top:10px;
-  white-space: nowrap
+  white-space: nowrap;
+  font-weight: bold;
 }
 .larger {
   font-size: 10pt
@@ -70,7 +71,7 @@ body {
 .newPage {
   page-break-before: always;
 }
-
+/* Intended to show where page breaks will occur */
 @media screen {
   .screenDivider {
     border-top:dashed black 1px
