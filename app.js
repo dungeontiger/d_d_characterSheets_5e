@@ -28,7 +28,7 @@ app.get('/character/:name', function (req, res) {
 });
 
 app.listen(3000, function () {
-  console.log('Example app listening on port 3000!')
+  console.log('Ready')
 });
 
 ///////////////////////////
@@ -365,6 +365,49 @@ app.addCalculations = function(c) {
     c.spellSaveDC = 8 + c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
     c.spellAttackMod = c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
   }
+  // gather spells
+  // TODO:
+  // render the spell table
+  c.spellTable = function() {
+    var r = '<table>';
+    r += '<tr><td colspan="9" class="header" style="text-align:left">Cantrips</td></tr>';
+    r += `<tr>
+            <td>Prepared</td>
+            <td>Name</td>
+            <td>Cast Time</td>
+            <td>Range</td>
+            <td>Duration</td>
+            <td>Dmg / Heal</td>
+            <td>Concentration</td>
+            <td>Higher Level</td>
+            <td>Ritual</td>
+          </tr>`;
+    for (var i = 0; i < c.spells.cantrips.length; i++) {
+      var spell = app.getSpell(c.spells.cantrips[i]);
+      r += '<tr>';
+      r += '<td>&#9723;</td>';
+      r += '<td>' + spell.name + '</td>';
+      r += '<td>' + spell.casting_time + '</td>';
+      r += '<td>' + spell.range + '</td>';
+      r += '<td>' + spell.duration + '</td>';
+      r += '<td>' + 'TBD' + '</td>';
+      r += '<td>' + spell.concentration + '</td>';
+      r += '<td>' + 'TBD' + '</td>';
+      r += '<td>' + spell.ritual + '</td>';
+      r += '</tr>';
+    }
+    r += '</table>';
+    return r;
+  }
+};
+
+app.getSpell = function(name) {
+  for (var i = 0; i < spells.length; i++) {
+    if (name == spells[i].name) {
+      return spells[i];
+    }
+  }
+  console.log('Failed to find spell ' + name);
 };
 
 app.modStr = function(mod) {
@@ -622,6 +665,7 @@ app.spells = function(c) {
         <td class="label">Spell Attack Mod</td>
       </tr>
   </table>
+  {{{spellTable}}}
   `;
   return mustache.render(t, c);
 };
