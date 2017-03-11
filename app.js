@@ -121,6 +121,21 @@ app.renderCharacter = function(character, res) {
   res.send(output);
 };
 
+app.getNumericPrefix = function(n) {
+  var r = n + '<sup>';
+  if (n == 1) {
+    r += 'st';
+  } else if (n == 2) {
+    r += 'nd';
+  } else if (n == 3) {
+    r += 'rd';
+  } else {
+    r += 'th';
+  }
+  r += '</sup>';
+  return r;
+};
+
 app.addCalculations = function(c) {
   var race = races[c.race.toLowerCase()];
   var playerClass = classes[c.class.toLowerCase()];
@@ -372,20 +387,20 @@ app.addCalculations = function(c) {
     var r = '<table>';
     r += '<tr><td colspan="9" class="header" style="text-align:left">Cantrips</td></tr>';
     r += `<tr>
-            <td>Prepared</td>
-            <td>Name</td>
-            <td>Cast Time</td>
-            <td>Range</td>
-            <td>Duration</td>
-            <td>Dmg / Heal</td>
-            <td>Concentration</td>
-            <td>Higher Level</td>
-            <td>Ritual</td>
+            <td class="small"></td>
+            <td class="small">Name</td>
+            <td class="small">Casting</td>
+            <td class="small">Range</td>
+            <td class="small">Duration</td>
+            <td class="small">Dmg / Heal</td>
+            <td class="small">Concen.</td>
+            <td class="small">Higher Lvl</td>
+            <td class="small">Ritual</td>
           </tr>`;
     for (var i = 0; i < c.spells.cantrips.length; i++) {
       var spell = app.getSpell(c.spells.cantrips[i]);
       r += '<tr>';
-      r += '<td>&#9723;</td>';
+      r += '<td></td>';
       r += '<td>' + spell.name + '</td>';
       r += '<td>' + spell.casting_time + '</td>';
       r += '<td>' + spell.range + '</td>';
@@ -395,6 +410,44 @@ app.addCalculations = function(c) {
       r += '<td>' + 'TBD' + '</td>';
       r += '<td>' + spell.ritual + '</td>';
       r += '</tr>';
+    }
+    // max level for any spell is 9
+    for (var j = 0; j < 10; j++) {
+      var spells = c.spells[j.toString()];
+      if (spells) {
+        r += '<tr><td colspan="9" class="header" style="text-align:left">' + app.getNumericPrefix(j) + ' Level - ';
+        r += '<span style="font-weight: normal;">Spell Slots: ';
+        var slots = app.getSpellSlots(j);
+        for (var i = 0; i < slots; i++) {
+          r += '&#9723;';
+        }
+        r += '</span></td></tr>'
+        r += `<tr>
+            <td class="small">Prep.</td>
+            <td class="small">Name</td>
+            <td class="small">Casting</td>
+            <td class="small">Range</td>
+            <td class="small">Duration</td>
+            <td class="small">Dmg / Heal</td>
+            <td class="small">Concen.</td>
+            <td class="small">Higher Lvl</td>
+            <td class="small">Ritual</td>
+          </tr>`;
+          for (var i = 0; i < spells.length; i++) {
+            var spell = app.getSpell(spells[i]);
+            r += '<tr>';
+            r += '<td>&#9723;</td>';
+            r += '<td>' + spell.name + '</td>';
+            r += '<td>' + spell.casting_time + '</td>';
+            r += '<td>' + spell.range + '</td>';
+            r += '<td>' + spell.duration + '</td>';
+            r += '<td>' + 'TBD' + '</td>';
+            r += '<td>' + spell.concentration + '</td>';
+            r += '<td>' + 'TBD' + '</td>';
+            r += '<td>' + spell.ritual + '</td>';
+            r += '</tr>';
+          }
+      }
     }
     r += '</table>';
     return r;
@@ -408,6 +461,10 @@ app.getSpell = function(name) {
     }
   }
   console.log('Failed to find spell ' + name);
+};
+
+app.getSpellSlots = function(spellLevel) {
+  return 3;
 };
 
 app.modStr = function(mod) {
