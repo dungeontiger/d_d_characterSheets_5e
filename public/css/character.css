@@ -77,3 +77,33 @@ body {
     border-top:dashed black 1px
   }
 }
+
+.spellbook {
+  font-size: 8pt;
+}
+
+.spellbookBox {
+  border: 1px solid black;
+  padding: 3px
+}
+
+.spellbookTitle {
+  text-align:center;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding-bottom: 10px
+
+}
+
+.spellbookLabel {
+  font-weight: bold
+}
+  
+table { 
+  page-break-inside:auto 
+}
+
+tr { 
+  page-break-inside:avoid; 
+  page-break-after:auto 
+}

@@ -11,7 +11,7 @@ var skills = require('./rules/skills.json');
 var backgrounds = require('./rules/backgrounds.json');
 var armor = require('./rules/armor.json');
 var weapons = require('./rules/weapons.json');
-var spells = require('./rules/spells.json');
+var Spells = require('./Spells');
 
 var app = express();
 
@@ -28,7 +28,7 @@ app.get('/character/:name', function (req, res) {
 });
 
 app.listen(3000, function () {
-  console.log('Ready')
+  console.log('Ready');
 });
 
 ///////////////////////////
@@ -380,8 +380,28 @@ app.addCalculations = function(c) {
     c.spellSaveDC = 8 + c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
     c.spellAttackMod = c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
   }
-  // gather spells
-  // TODO:
+  // gather spell
+  if (c.domain) {
+    // add domain related spells (only for clerics)
+    if (!c.spells) {
+      c.spells = {};
+    }
+    var domain = playerClass.domains[c.domain];
+    for (var i = 0; i <= c.level; i++) {
+      var domainSpells = domain.knownDomainSpells[i.toString()];
+      var spellLevel = c.spells[i.toString()];
+      if (!spellLevel) {
+        c.spells[i.toString()] = [];
+        spellLevel = c.spells[i.toString()];
+      }
+      if (domainSpells) {
+        for (var j = 0; j < domainSpells.length; j++) {
+          spellLevel.push(domainSpells[j]);
+        }
+        spellLevel.sort(); 
+      }
+    }
+  }
   // render the spell table
   c.spellTable = function() {
     var r = '<table>';
@@ -398,7 +418,7 @@ app.addCalculations = function(c) {
             <td class="small">Ritual</td>
           </tr>`;
     for (var i = 0; i < c.spells.cantrips.length; i++) {
-      var spell = app.getSpell(c.spells.cantrips[i]);
+      var spell = Spells.getSpell(c.spells.cantrips[i]);
       r += '<tr>';
       r += '<td></td>';
       r += '<td>' + spell.name + '</td>';
@@ -412,7 +432,7 @@ app.addCalculations = function(c) {
       r += '</tr>';
     }
     // max level for any spell is 9
-    for (var j = 0; j < 10; j++) {
+    for (var j = 1; j < 10; j++) {
       var spells = c.spells[j.toString()];
       if (spells) {
         r += '<tr><td colspan="9" class="header" style="text-align:left">' + app.getNumericPrefix(j) + ' Level - ';
@@ -434,7 +454,7 @@ app.addCalculations = function(c) {
             <td class="small">Ritual</td>
           </tr>`;
           for (var i = 0; i < spells.length; i++) {
-            var spell = app.getSpell(spells[i]);
+            var spell = Spells.getSpell(spells[i]);
             r += '<tr>';
             r += '<td>&#9723;</td>';
             r += '<td>' + spell.name + '</td>';
@@ -452,17 +472,48 @@ app.addCalculations = function(c) {
     r += '</table>';
     return r;
   }
-};
-
-app.getSpell = function(name) {
-  for (var i = 0; i < spells.length; i++) {
-    if (name == spells[i].name) {
-      return spells[i];
+  // render the spell book
+  c.spellBook = function() {
+    // this will list ALL spells, need to filter for known spells for
+    // other classes
+    var spells = Spells.getSpellsByClass(c.class, c.level);
+    var r = '<div class="newPage title center screenDivider">Spellbook</div>';
+    r += '<table class="spellbook"><tr valign="top">';
+    for (var i = 0; i < spells.length; i++) {
+      var spell = spells[i];
+      if ( i % 3 == 0 && i != 0) {
+        r += '</tr>';
+        r += '<tr valign="top">';
+      }
+      r += '<td class="spellbookBox">';
+      r += '<div class="spellbookTitle">' + spell.name + '</div>';
+      r += '<div>' + spell.level + ' ' + (spell.school ? spell.school : '') + '</div>';
+      r += '<div >' + spell.class + '</div>';
+      r += '<div><span class="spellbookLabel">Casting Time: </span>' + spell.casting_time + '</div>';
+      r += '<div><span class="spellbookLabel">Range: </span>' + spell.range + '</div>';
+      r += '<div><span class="spellbookLabel">Components: </span>' + spell.components + '</div>';
+      if (spell.material) {
+        r += '<div><span class="spellbookLabel">Material: </span>' + spell.material + '</div>';
+      }
+      r += '<div><span class="spellbookLabel">Duration: </span>' + spell.duration + '</div>';
+      r += '<div><span class="spellbookLabel">Concentration: </span>' + spell.concentration + '</div>';
+      r += '<div><span class="spellbookLabel">Ritual: </span>' + spell.ritual + '</div>';
+      r += '<div>' + spell.desc + '</div>';
+      if (spell.higher_level) {
+        r += '<div><span class="spellbookLabel">Cast at Higher Level: </span>' + spell.higher_level + '</div>';
+      }
+      r += '</td>';
+      if ( i == spells.length - 1) {
+        r += '</tr>';
+      }
     }
-  }
-  console.log('Failed to find spell ' + name);
+    r += '</table>';
+    return r;
+  };
 };
 
+// TODO:
+// TODO: Also need to put prepared spell max
 app.getSpellSlots = function(spellLevel) {
   return 3;
 };
@@ -723,6 +774,7 @@ app.spells = function(c) {
       </tr>
   </table>
   {{{spellTable}}}
+  {{{spellBook}}}
   `;
   return mustache.render(t, c);
 };
