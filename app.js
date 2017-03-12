@@ -379,6 +379,7 @@ app.addCalculations = function(c) {
     c.castingAbility = playerClass.castingAbility;
     c.spellSaveDC = 8 + c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
     c.spellAttackMod = c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
+    c.preparedSpells = app.abilityMods[c[c.castingAbility] - 1] + c.level;
   }
   // gather spell
   if (c.domain) {
@@ -404,6 +405,80 @@ app.addCalculations = function(c) {
   }
   // render the spell table
   c.spellTable = function() {
+    // clerics have all spells at their disposal
+    // TODO for other classes
+    var r ='';
+    var spells = Spells.getSpellsByClass(c.class, c.level - 1);
+    for (var i = 0; i < 10; i++) {
+      var spellSlots;
+      if (i == 0) {
+        spellSlots = playerClass.levelFeatures[c.level - 1].spellSlots.cantrips;
+      } else {
+        spellSlots = playerClass.levelFeatures[c.level - 1].spellSlots[i.toString()];
+      }
+      if (!spellSlots) {
+        break;
+      }
+
+      var levelName;
+      if (i == 0) {
+        // cantrips
+        levelName = 'Cantrips - ' + '<span style="font-weight: normal;">Choose ' + spellSlots + ' cantrips</span>'
+      } else {
+        // level 1 to 9
+        levelName = app.getNumericPrefix(i) + ' Level - ' + '<span style="font-weight: normal;">Spell Slots: ';
+        for (var k = 0; k < spellSlots; k++) {
+          levelName += '&#9723;';
+        }
+        levelName += '</span></td></tr>'
+      }
+
+      var domain = playerClass.domains[c.domain];
+
+      r += '<table><tr><td colspan="9" class="header" style="text-align:left">' + levelName + '</td></tr>';
+      r += `<tr>
+              <td class="small"></td>
+              <td class="small">Name</td>
+              <td class="small">Casting</td>
+              <td class="small">Range</td>
+              <td class="small">Duration</td>
+              <td class="small">Dmg / Heal</td>
+              <td class="small">Area</td>
+              <td class="small">Concen.</td>
+              <td class="small">Higher Lvl</td>
+              <td class="small">Ritual</td>
+            </tr>`;
+      for (var j = 0; j < spells.length; j++) {
+        // write out the details for each spell of this level
+        var spell = spells[j];
+        if ((i == 0 && spell.level == 'Cantrip') || (i == parseInt(spell.level.substr(0,1)))) {
+          r += '<tr>';
+          // check to see if this spell is prepared
+          var box = '&#9723;';
+          if (spell.level != 'Cantrip') {
+            var domainSpells = domain.knownDomainSpells[i.toString()];
+            if (domainSpells.indexOf(spell.name) != -1) {
+              box = '&#9724;';
+            }
+          }
+          r += '<td>' + box + '</td>';
+          r += '<td>' + spell.name + '</td>';
+          r += '<td>' + spell.casting_time + '</td>';
+          r += '<td>' + spell.range + '</td>';
+          r += '<td>' + spell.duration + '</td>';
+          r += '<td>' + 'TBD' + '</td>';
+          r += '<td>' + 'TBD' + '</td>';
+          r += '<td>' + spell.concentration + '</td>';
+          r += '<td>' + 'TBD' + '</td>';
+          r += '<td>' + spell.ritual + '</td>';
+          r += '</tr>';
+        }
+      }
+      r += '</table>';
+    }
+    return r;
+  };
+  c.spellTable2 = function() {
     var r = '<table>';
     r += '<tr><td colspan="9" class="header" style="text-align:left">Cantrips</td></tr>';
     r += `<tr>
@@ -413,6 +488,7 @@ app.addCalculations = function(c) {
             <td class="small">Range</td>
             <td class="small">Duration</td>
             <td class="small">Dmg / Heal</td>
+            <td class="small">Area</td>
             <td class="small">Concen.</td>
             <td class="small">Higher Lvl</td>
             <td class="small">Ritual</td>
@@ -425,6 +501,7 @@ app.addCalculations = function(c) {
       r += '<td>' + spell.casting_time + '</td>';
       r += '<td>' + spell.range + '</td>';
       r += '<td>' + spell.duration + '</td>';
+      r += '<td>' + 'TBD' + '</td>';
       r += '<td>' + 'TBD' + '</td>';
       r += '<td>' + spell.concentration + '</td>';
       r += '<td>' + 'TBD' + '</td>';
@@ -449,6 +526,7 @@ app.addCalculations = function(c) {
             <td class="small">Range</td>
             <td class="small">Duration</td>
             <td class="small">Dmg / Heal</td>
+            <td class="small">Area</td>
             <td class="small">Concen.</td>
             <td class="small">Higher Lvl</td>
             <td class="small">Ritual</td>
@@ -461,6 +539,7 @@ app.addCalculations = function(c) {
             r += '<td>' + spell.casting_time + '</td>';
             r += '<td>' + spell.range + '</td>';
             r += '<td>' + spell.duration + '</td>';
+            r += '<td>' + 'TBD' + '</td>';
             r += '<td>' + 'TBD' + '</td>';
             r += '<td>' + spell.concentration + '</td>';
             r += '<td>' + 'TBD' + '</td>';
@@ -476,7 +555,7 @@ app.addCalculations = function(c) {
   c.spellBook = function() {
     // this will list ALL spells, need to filter for known spells for
     // other classes
-    var spells = Spells.getSpellsByClass(c.class, c.level);
+    var spells = Spells.getSpellsByClass(c.class, c.level - 1);
     var r = '<div class="newPage title center screenDivider">Spellbook</div>';
     r += '<table class="spellbook"><tr valign="top">';
     for (var i = 0; i < spells.length; i++) {
@@ -510,12 +589,6 @@ app.addCalculations = function(c) {
     r += '</table>';
     return r;
   };
-};
-
-// TODO:
-// TODO: Also need to put prepared spell max
-app.getSpellSlots = function(spellLevel) {
-  return 3;
 };
 
 app.modStr = function(mod) {
@@ -763,14 +836,16 @@ app.spells = function(c) {
     <div class="newPage title center screenDivider">Spells</div>
     <table class="tableBox">
       <tr class="tableValueBox">
-        <td class="oneThird">{{castingAbility}}</td>
-        <td class="oneThird">{{spellSaveDC}}</td>
-        <td class="oneThird">{{spellAttackMod}}</td>
+        <td class="oneQuarter">{{castingAbility}}</td>
+        <td class="oneQuarter">{{spellSaveDC}}</td>
+        <td class="oneQuarter">{{spellAttackMod}}</td>
+        <td class="oneQuarter">{{preparedSpells}}</td>
       </tr>
       <tr>
         <td class="label">Spellcasting Ability</td>
         <td class="label">Spell Save DC</td>
         <td class="label">Spell Attack Mod</td>
+        <td class="label">Prepared Spells</td>
       </tr>
   </table>
   {{{spellTable}}}
