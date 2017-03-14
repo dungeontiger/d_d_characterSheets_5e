@@ -11,7 +11,7 @@ var skills = require('./rules/skills.json');
 var backgrounds = require('./rules/backgrounds.json');
 var armor = require('./rules/armor.json');
 var weapons = require('./rules/weapons.json');
-var spells = require('./rules/spells.json');
+var Spells = require('./Spells');
 
 var app = express();
 
@@ -28,7 +28,7 @@ app.get('/character/:name', function (req, res) {
 });
 
 app.listen(3000, function () {
-  console.log('Example app listening on port 3000!')
+  console.log('Ready');
 });
 
 ///////////////////////////
@@ -119,6 +119,21 @@ app.renderCharacter = function(character, res) {
   output += '</body>';
   output+= '</html>';
   res.send(output);
+};
+
+app.getNumericPrefix = function(n) {
+  var r = n + '<sup>';
+  if (n == 1) {
+    r += 'st';
+  } else if (n == 2) {
+    r += 'nd';
+  } else if (n == 3) {
+    r += 'rd';
+  } else {
+    r += 'th';
+  }
+  r += '</sup>';
+  return r;
 };
 
 app.addCalculations = function(c) {
@@ -361,14 +376,151 @@ app.addCalculations = function(c) {
   }
   // spell abilities
   if (c.features.indexOf('Spellcasting') != -1) {
-    console.log("here");
     c.castingAbility = playerClass.castingAbility;
     c.spellSaveDC = 8 + c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
     c.spellAttackMod = c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
-    console.log(c.castingAbility);
-    console.log(c.spellSaveDC);
-    console.log(c.spellAttackMod);
+    c.preparedSpells = app.abilityMods[c[c.castingAbility] - 1] + c.level;
   }
+  // gather spell
+  if (c.domain) {
+    // add domain related spells (only for clerics)
+    if (!c.spells) {
+      c.spells = {};
+    }
+    var domain = playerClass.domains[c.domain];
+    for (var i = 0; i <= c.level; i++) {
+      var domainSpells = domain.knownDomainSpells[i.toString()];
+      var spellLevel = c.spells[i.toString()];
+      if (!spellLevel) {
+        c.spells[i.toString()] = [];
+        spellLevel = c.spells[i.toString()];
+      }
+      if (domainSpells) {
+        for (var j = 0; j < domainSpells.length; j++) {
+          spellLevel.push(domainSpells[j]);
+        }
+        spellLevel.sort(); 
+      }
+    }
+  }
+  // render the spell table
+  c.spellTable = function() {
+    // clerics have all spells at their disposal
+    // TODO for other classes
+    var r ='';
+    var spells = Spells.getSpellsByClass(c.class, c.level - 1);
+    for (var i = 0; i < 10; i++) {
+      var spellSlots;
+      if (i == 0) {
+        spellSlots = playerClass.levelFeatures[c.level - 1].spellSlots.cantrips;
+      } else {
+        spellSlots = playerClass.levelFeatures[c.level - 1].spellSlots[i.toString()];
+      }
+      if (!spellSlots) {
+        break;
+      }
+
+      var levelName;
+      if (i == 0) {
+        // cantrips
+        levelName = 'Cantrips';
+      } else {
+        // level 1 to 9
+        levelName = app.getNumericPrefix(i) + ' Level - ' + '<span style="font-weight: normal;">Spell Slots: ';
+        for (var k = 0; k < spellSlots; k++) {
+          levelName += '&#9723;';
+        }
+        levelName += '</span></td></tr>'
+      }
+
+      var domain = playerClass.domains[c.domain];
+
+      r += '<table><tr><td colspan="9" class="header" style="text-align:left">' + levelName + '</td></tr>';
+      r += `<tr>
+              <td class="medium"></td>
+              <td class="medium">Name</td>
+              <td class="medium">Casting</td>
+              <td class="medium">Range</td>
+              <td class="medium">Duration</td>
+              <td class="medium">Dmg / Heal</td>
+              <td class="medium">Area</td>
+              <td class="medium">Concen.</td>
+              <td class="medium">Higher Lvl</td>
+              <td class="medium">Ritual</td>
+            </tr>`;
+      for (var j = 0; j < spells.length; j++) {
+        // write out the details for each spell of this level
+        var spell = spells[j];
+        if ((i == 0 && spell.level == 'Cantrip' && c.spells.cantrips.indexOf(spell.name) != -1) || 
+          (i == parseInt(spell.level.substr(0,1)))) {
+          r += '<tr>';
+          // check to see if this spell is prepared
+          var box = '&#9723;';
+          if (spell.level == 'Cantrip') {
+            box = '';
+          }
+          if (spell.level != 'Cantrip') {
+            var domainSpells = domain.knownDomainSpells[i.toString()];
+            if (domainSpells.indexOf(spell.name) != -1) {
+              box = '&#9724;';
+            }
+          }
+          r += '<td class="mediumRightPadding">' + box + '</td>';
+          r += '<td class="mediumRightPadding">' + spell.name + '</td>';
+          r += '<td class="mediumRightPadding">' + spell.casting_time + '</td>';
+          r += '<td class="mediumRightPadding">' + spell.range + '</td>';
+          r += '<td class="mediumRightPadding">' + spell.duration + '</td>';
+          r += '<td class="mediumRightPadding">' + 'TBD' + '</td>';
+          r += '<td class="mediumRightPadding">' + 'TBD' + '</td>';
+          r += '<td class="mediumRightPadding">' + spell.concentration + '</td>';
+          r += '<td class="mediumRightPadding">' + 'TBD' + '</td>';
+          r += '<td class="mediumRightPadding">' + spell.ritual + '</td>';
+          r += '</tr>';
+        }
+      }
+      r += '</table>';
+    }
+    return r;
+  };
+
+  // render the spell book
+  c.spellBook = function() {
+    // this will list ALL spells, need to filter for known spells for
+    // other classes
+    var spells = Spells.getSpellsByClass(c.class, c.level - 1);
+    var r = '<div class="newPage title center screenDivider">Spellbook</div>';
+    r += '<table class="spellbook"><tr valign="top">';
+    for (var i = 0; i < spells.length; i++) {
+      var spell = spells[i];
+      if ( i % 3 == 0 && i != 0) {
+        r += '</tr>';
+        r += '<tr valign="top">';
+      }
+      r += '<td class="spellbookBox">';
+      r += '<div class="spellbookTitle">' + spell.name + '</div>';
+      r += '<div>' + spell.level + ' ' + (spell.school ? spell.school : '') + '</div>';
+      r += '<div >' + spell.class + '</div>';
+      r += '<div><span class="spellbookLabel">Casting Time: </span>' + spell.casting_time + '</div>';
+      r += '<div><span class="spellbookLabel">Range: </span>' + spell.range + '</div>';
+      r += '<div><span class="spellbookLabel">Components: </span>' + spell.components + '</div>';
+      if (spell.material) {
+        r += '<div><span class="spellbookLabel">Material: </span>' + spell.material + '</div>';
+      }
+      r += '<div><span class="spellbookLabel">Duration: </span>' + spell.duration + '</div>';
+      r += '<div><span class="spellbookLabel">Concentration: </span>' + spell.concentration + '</div>';
+      r += '<div><span class="spellbookLabel">Ritual: </span>' + spell.ritual + '</div>';
+      r += '<div>' + spell.desc + '</div>';
+      if (spell.higher_level) {
+        r += '<div><span class="spellbookLabel">Cast at Higher Level: </span>' + spell.higher_level + '</div>';
+      }
+      r += '</td>';
+      if ( i == spells.length - 1) {
+        r += '</tr>';
+      }
+    }
+    r += '</table>';
+    return r;
+  };
 };
 
 app.modStr = function(mod) {
@@ -582,24 +734,22 @@ app.weapons = function(c) {
   <table>
     <tr>
       <td class="medium">Name</td>
-      <td class="medium">To Hit</td>
-      <td class="medium">Damage</td>
+      <td class="medium">Hit</td>
+      <td class="medium">Dmg</td>
       <td class="medium">Ammo</td>
-      <td class="medium">Range</td>
-      <td class="medium">Dmg Type</td>
+      <td class="medium">Rng</td>
       <td class="medium">Type</td>
       <td class="medium">Notes</td>
     </tr>
     {{#weaponStats}}
     <tr>
-      <td>{{name}}</td>
-      <td>{{hit}}</td>
-      <td>{{damage}}</td>
-      <td>{{ammo}}</td>
-      <td>{{range}}</td>
-      <td>{{damageType}}</td>
-      <td>{{type}}</td>
-      <td>{{notes}}</td>
+      <td class="mediumRightPadding">{{name}}</td>
+      <td class="mediumRightPadding">{{hit}}</td>
+      <td class="mediumRightPadding">{{damage}}</td>
+      <td class="mediumRightPadding">{{ammo}}</td>
+      <td class="mediumRightPadding">{{range}}</td>
+      <td class="mediumRightPadding">{{type}} ({{damageType}})</td>
+      <td class="mediumRightPadding">{{notes}}</td>
     </tr>
     {{/weaponStats}}
   </table>
@@ -613,19 +763,23 @@ app.spells = function(c) {
     return '';
   }
   var t = `
-    <div class="newPage title center">Spells</div>
+    <div class="newPage title center screenDivider">Spells</div>
     <table class="tableBox">
       <tr class="tableValueBox">
-        <td class="oneThird">{{castingAbility}}</td>
-        <td class="oneThird">{{spellSaveDC}}</td>
-        <td class="oneThird">{{spellAttackMod}}</td>
+        <td class="oneQuarter">{{castingAbility}}</td>
+        <td class="oneQuarter">{{spellSaveDC}}</td>
+        <td class="oneQuarter">{{spellAttackMod}}</td>
+        <td class="oneQuarter">{{preparedSpells}}</td>
       </tr>
       <tr>
         <td class="label">Spellcasting Ability</td>
         <td class="label">Spell Save DC</td>
         <td class="label">Spell Attack Mod</td>
+        <td class="label">Prepared Spells</td>
       </tr>
   </table>
+  {{{spellTable}}}
+  {{{spellBook}}}
   `;
   return mustache.render(t, c);
 };
