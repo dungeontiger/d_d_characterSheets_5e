@@ -1,14 +1,13 @@
 body {
   width:8.5in;
   height:11in;
-  border: 1px solid black;
   padding:10px
 }
 .center {
   text-align:center
 }
 .title {
-  font-size:32pt;
+  font-size:36pt;
   font-family: 'UnifrakturMaguntia', cursive;
   white-space: nowrap
 }
@@ -21,6 +20,8 @@ body {
   text-transform: uppercase;
   font-size:10pt;
   white-space: nowrap;
+  font-weight: bold;
+  padding-right: 20px
 }
 .label {
   text-transform: uppercase;
@@ -37,6 +38,10 @@ body {
 .oneThird {
   width:33%
 }
+.oneQuarter {
+  width:25%
+}
+
 .one12th {
   width:8.4%
 }
@@ -48,7 +53,8 @@ body {
   font-size:14pt;
   text-transform: uppercase;
   padding-top:10px;
-  white-space: nowrap
+  white-space: nowrap;
+  font-weight: bold;
 }
 .larger {
   font-size: 10pt
@@ -70,4 +76,44 @@ body {
 }
 .newPage {
   page-break-before: always;
+}
+/* Intended to show where page breaks will occur */
+@media screen {
+  .screenDivider {
+    border-top:dashed black 1px
+  }
+}
+
+.spellbook {
+  font-size: 8pt;
+}
+
+.spellbookBox {
+  border: 1px solid black;
+  padding: 3px
+}
+
+.spellbookTitle {
+  text-align:center;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding-bottom: 10px
+
+}
+
+.spellbookLabel {
+  font-weight: bold
+}
+  
+table { 
+  page-break-inside:auto 
+}
+
+tr { 
+  page-break-inside:avoid; 
+  page-break-after:auto 
+}
+
+.mediumRightPadding {
+  padding-right:10px
 }
