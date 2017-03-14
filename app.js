@@ -439,13 +439,13 @@ app.addCalculations = function(c) {
       r += `<tr>
               <td class="medium"></td>
               <td class="medium">Name</td>
-              <td class="medium">Casting</td>
-              <td class="medium">Range</td>
-              <td class="medium">Duration</td>
-              <td class="medium">Dmg / Heal</td>
+              <td class="medium">Cast</td>
+              <td class="medium">Rng</td>
+              <td class="medium">Dur</td>
+              <td class="medium">Dmg</td>
               <td class="medium">Area</td>
-              <td class="medium">Concen.</td>
-              <td class="medium">Higher Lvl</td>
+              <td class="medium">Con.</td>
+              <td class="medium">Higher</td>
               <td class="medium">Ritual</td>
             </tr>`;
       for (var j = 0; j < spells.length; j++) {
@@ -473,7 +473,7 @@ app.addCalculations = function(c) {
           r += '<td class="mediumRightPadding">' + 'TBD' + '</td>';
           r += '<td class="mediumRightPadding">' + 'TBD' + '</td>';
           r += '<td class="mediumRightPadding">' + spell.concentration + '</td>';
-          r += '<td class="mediumRightPadding">' + 'TBD' + '</td>';
+          r += '<td class="mediumRightPadding">' + (spell.higher_level ? 'yes' : 'no') + '</td>';
           r += '<td class="mediumRightPadding">' + spell.ritual + '</td>';
           r += '</tr>';
         }
