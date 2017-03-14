@@ -423,7 +423,7 @@ app.addCalculations = function(c) {
       var levelName;
       if (i == 0) {
         // cantrips
-        levelName = 'Cantrips - ' + '<span style="font-weight: normal;">Choose ' + spellSlots + ' cantrips</span>'
+        levelName = 'Cantrips';
       } else {
         // level 1 to 9
         levelName = app.getNumericPrefix(i) + ' Level - ' + '<span style="font-weight: normal;">Spell Slots: ';
@@ -437,40 +437,44 @@ app.addCalculations = function(c) {
 
       r += '<table><tr><td colspan="9" class="header" style="text-align:left">' + levelName + '</td></tr>';
       r += `<tr>
-              <td class="small"></td>
-              <td class="small">Name</td>
-              <td class="small">Casting</td>
-              <td class="small">Range</td>
-              <td class="small">Duration</td>
-              <td class="small">Dmg / Heal</td>
-              <td class="small">Area</td>
-              <td class="small">Concen.</td>
-              <td class="small">Higher Lvl</td>
-              <td class="small">Ritual</td>
+              <td class="medium"></td>
+              <td class="medium">Name</td>
+              <td class="medium">Casting</td>
+              <td class="medium">Range</td>
+              <td class="medium">Duration</td>
+              <td class="medium">Dmg / Heal</td>
+              <td class="medium">Area</td>
+              <td class="medium">Concen.</td>
+              <td class="medium">Higher Lvl</td>
+              <td class="medium">Ritual</td>
             </tr>`;
       for (var j = 0; j < spells.length; j++) {
         // write out the details for each spell of this level
         var spell = spells[j];
-        if ((i == 0 && spell.level == 'Cantrip') || (i == parseInt(spell.level.substr(0,1)))) {
+        if ((i == 0 && spell.level == 'Cantrip' && c.spells.cantrips.indexOf(spell.name) != -1) || 
+          (i == parseInt(spell.level.substr(0,1)))) {
           r += '<tr>';
           // check to see if this spell is prepared
           var box = '&#9723;';
+          if (spell.level == 'Cantrip') {
+            box = '';
+          }
           if (spell.level != 'Cantrip') {
             var domainSpells = domain.knownDomainSpells[i.toString()];
             if (domainSpells.indexOf(spell.name) != -1) {
               box = '&#9724;';
             }
           }
-          r += '<td>' + box + '</td>';
-          r += '<td>' + spell.name + '</td>';
-          r += '<td>' + spell.casting_time + '</td>';
-          r += '<td>' + spell.range + '</td>';
-          r += '<td>' + spell.duration + '</td>';
-          r += '<td>' + 'TBD' + '</td>';
-          r += '<td>' + 'TBD' + '</td>';
-          r += '<td>' + spell.concentration + '</td>';
-          r += '<td>' + 'TBD' + '</td>';
-          r += '<td>' + spell.ritual + '</td>';
+          r += '<td class="mediumRightPadding">' + box + '</td>';
+          r += '<td class="mediumRightPadding">' + spell.name + '</td>';
+          r += '<td class="mediumRightPadding">' + spell.casting_time + '</td>';
+          r += '<td class="mediumRightPadding">' + spell.range + '</td>';
+          r += '<td class="mediumRightPadding">' + spell.duration + '</td>';
+          r += '<td class="mediumRightPadding">' + 'TBD' + '</td>';
+          r += '<td class="mediumRightPadding">' + 'TBD' + '</td>';
+          r += '<td class="mediumRightPadding">' + spell.concentration + '</td>';
+          r += '<td class="mediumRightPadding">' + 'TBD' + '</td>';
+          r += '<td class="mediumRightPadding">' + spell.ritual + '</td>';
           r += '</tr>';
         }
       }
@@ -478,79 +482,7 @@ app.addCalculations = function(c) {
     }
     return r;
   };
-  c.spellTable2 = function() {
-    var r = '<table>';
-    r += '<tr><td colspan="9" class="header" style="text-align:left">Cantrips</td></tr>';
-    r += `<tr>
-            <td class="small"></td>
-            <td class="small">Name</td>
-            <td class="small">Casting</td>
-            <td class="small">Range</td>
-            <td class="small">Duration</td>
-            <td class="small">Dmg / Heal</td>
-            <td class="small">Area</td>
-            <td class="small">Concen.</td>
-            <td class="small">Higher Lvl</td>
-            <td class="small">Ritual</td>
-          </tr>`;
-    for (var i = 0; i < c.spells.cantrips.length; i++) {
-      var spell = Spells.getSpell(c.spells.cantrips[i]);
-      r += '<tr>';
-      r += '<td></td>';
-      r += '<td>' + spell.name + '</td>';
-      r += '<td>' + spell.casting_time + '</td>';
-      r += '<td>' + spell.range + '</td>';
-      r += '<td>' + spell.duration + '</td>';
-      r += '<td>' + 'TBD' + '</td>';
-      r += '<td>' + 'TBD' + '</td>';
-      r += '<td>' + spell.concentration + '</td>';
-      r += '<td>' + 'TBD' + '</td>';
-      r += '<td>' + spell.ritual + '</td>';
-      r += '</tr>';
-    }
-    // max level for any spell is 9
-    for (var j = 1; j < 10; j++) {
-      var spells = c.spells[j.toString()];
-      if (spells) {
-        r += '<tr><td colspan="9" class="header" style="text-align:left">' + app.getNumericPrefix(j) + ' Level - ';
-        r += '<span style="font-weight: normal;">Spell Slots: ';
-        var slots = app.getSpellSlots(j);
-        for (var i = 0; i < slots; i++) {
-          r += '&#9723;';
-        }
-        r += '</span></td></tr>'
-        r += `<tr>
-            <td class="small">Prep.</td>
-            <td class="small">Name</td>
-            <td class="small">Casting</td>
-            <td class="small">Range</td>
-            <td class="small">Duration</td>
-            <td class="small">Dmg / Heal</td>
-            <td class="small">Area</td>
-            <td class="small">Concen.</td>
-            <td class="small">Higher Lvl</td>
-            <td class="small">Ritual</td>
-          </tr>`;
-          for (var i = 0; i < spells.length; i++) {
-            var spell = Spells.getSpell(spells[i]);
-            r += '<tr>';
-            r += '<td>&#9723;</td>';
-            r += '<td>' + spell.name + '</td>';
-            r += '<td>' + spell.casting_time + '</td>';
-            r += '<td>' + spell.range + '</td>';
-            r += '<td>' + spell.duration + '</td>';
-            r += '<td>' + 'TBD' + '</td>';
-            r += '<td>' + 'TBD' + '</td>';
-            r += '<td>' + spell.concentration + '</td>';
-            r += '<td>' + 'TBD' + '</td>';
-            r += '<td>' + spell.ritual + '</td>';
-            r += '</tr>';
-          }
-      }
-    }
-    r += '</table>';
-    return r;
-  }
+
   // render the spell book
   c.spellBook = function() {
     // this will list ALL spells, need to filter for known spells for
@@ -802,24 +734,22 @@ app.weapons = function(c) {
   <table>
     <tr>
       <td class="medium">Name</td>
-      <td class="medium">To Hit</td>
-      <td class="medium">Damage</td>
+      <td class="medium">Hit</td>
+      <td class="medium">Dmg</td>
       <td class="medium">Ammo</td>
-      <td class="medium">Range</td>
-      <td class="medium">Dmg Type</td>
+      <td class="medium">Rng</td>
       <td class="medium">Type</td>
       <td class="medium">Notes</td>
     </tr>
     {{#weaponStats}}
     <tr>
-      <td>{{name}}</td>
-      <td>{{hit}}</td>
-      <td>{{damage}}</td>
-      <td>{{ammo}}</td>
-      <td>{{range}}</td>
-      <td>{{damageType}}</td>
-      <td>{{type}}</td>
-      <td>{{notes}}</td>
+      <td class="mediumRightPadding">{{name}}</td>
+      <td class="mediumRightPadding">{{hit}}</td>
+      <td class="mediumRightPadding">{{damage}}</td>
+      <td class="mediumRightPadding">{{ammo}}</td>
+      <td class="mediumRightPadding">{{range}}</td>
+      <td class="mediumRightPadding">{{type}} ({{damageType}})</td>
+      <td class="mediumRightPadding">{{notes}}</td>
     </tr>
     {{/weaponStats}}
   </table>
