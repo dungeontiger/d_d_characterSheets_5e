@@ -114,6 +114,10 @@ app.renderCharacter = function(character, res) {
   output += app.skills(character);
   // weapons
   output += app.weapons(character);
+  // equipment and treasure
+  output += app.equipmentAndTreasure(character);
+  // character description
+  output += app.characterDescription(character);
   // spells
   output += app.spells(character);
   output += '</body>';
@@ -555,7 +559,7 @@ app.introBlock = function(c) {
       <table class="tableBox">
       <tr class="tableValueBox">
         <td class="oneThird">{{level}}<sup>{{levelStr}}</sup> {{classDesc}}</td>
-        <td class="oneThird">{{background}}</td>
+        <td class="oneThird">{{background}} {{background specialty}}</td>
         <td class="oneThird">{{playerName}}</td>
       </tr>
       <tr>
@@ -780,6 +784,95 @@ app.spells = function(c) {
   </table>
   {{{spellTable}}}
   {{{spellBook}}}
+  `;
+  return mustache.render(t, c);
+};
+
+app.equipmentAndTreasure = function(c) {
+  var t = `
+    <div class="newPage title center screenDivider">Equipment and Treasure</div>
+    <div class="header">Coins</div>
+    <table class="tableBox">
+      <tr class="tableValueBox">
+        <td class="oneFifth">{{treasure.pp}}</td>
+        <td class="oneFifth">{{treasure.ep}}</td>
+        <td class="oneFifth">{{treasure.gp}}</td>
+        <td class="oneFifth">{{treasure.sp}}</td>
+        <td class="oneFifth">{{treasure.cp}}</td>
+      </tr>
+      <tr>
+        <td class="label">Platinum (pp)</td>
+        <td class="label">Electrum (ep)</td>
+        <td class="label">Gold (gp)</td>
+        <td class="label">Silver (sp)</td>
+        <td class="label">Copper (cp)</td>
+      </tr>
+  </table>
+  <div class="header">Items and Equipment</div>
+  <table class="tableBox">
+    {{#equipment}}
+    <tr>
+      <td>{{.}}</td>
+    </tr>
+    <tr>
+      <td class="label"></td>
+    </tr>
+    {{/equipment}}
+  </table>
+
+  `;
+  return mustache.render(t, c);
+};
+
+app.characterDescription = function(c) {
+  var t = `
+    <div class="newPage title center screenDivider">Character Description</div>
+    <table class="tableBox">
+      <tr class="tableValueBox">
+        <td class="oneFifth">{{description.age}}</td>
+        <td class="oneFifth">{{description.eyes}}</td>
+        <td class="oneFifth">{{description.hair}}</td>
+        <td class="oneFifth">{{description.weight}}</td>
+        <td class="oneFifth">{{description.height}}</td>
+      </tr>
+      <tr>
+        <td class="label">Age</td>
+        <td class="label">Eyes</td>
+        <td class="label">Hair</td>
+        <td class="label">Weight</td>
+        <td class="label">Height</td>
+      </tr>
+  </table>
+  <table class="tableBox">
+    <tr class="tableValueBox" valign="top">
+      <td class="oneQuarter">{{description.personal trait}}</td>
+      <td class="oneQuarter">{{description.ideal}}</td>
+      <td class="oneQuarter">{{description.bond}}</td>
+      <td class="oneQuarter">{{description.flaw}}</td>
+    </tr>
+    <tr>
+        <td class="label">Personal Trait</td>
+        <td class="label">Ideal</td>
+        <td class="label">Bond</td>
+        <td class="label">Flaw</td>
+    </tr>
+  </table>
+  <table class="tableBox">
+    <tr class="tableValueBox" valign="top">
+      <td class="oneQuarter">{{description.backstory}}</td>
+    </tr>
+    <tr>
+      <td class="label">Backstory</td>
+    </tr>
+  </table>
+  <table class="tableBox">
+    <tr class="tableValueBox" valign="top">
+      <td class="oneQuarter">{{description.physical description}}</td>
+    </tr>
+    <tr>
+      <td class="label">Physical Description</td>
+    </tr>
+  </table>
   `;
   return mustache.render(t, c);
 };
