@@ -114,12 +114,14 @@ app.renderCharacter = function(character, res) {
   output += app.skills(character);
   // weapons
   output += app.weapons(character);
+  // spells
+  output += app.spells(character);
   // equipment and treasure
   output += app.equipmentAndTreasure(character);
   // character description
   output += app.characterDescription(character);
-  // spells
-  output += app.spells(character);
+  // spellbook
+  output += app.renderSpellbook(character);
   output += '</body>';
   output+= '</html>';
   res.send(output);
@@ -783,7 +785,6 @@ app.spells = function(c) {
       </tr>
   </table>
   {{{spellTable}}}
-  {{{spellBook}}}
   `;
   return mustache.render(t, c);
 };
@@ -819,7 +820,6 @@ app.equipmentAndTreasure = function(c) {
     </tr>
     {{/equipment}}
   </table>
-
   `;
   return mustache.render(t, c);
 };
@@ -876,3 +876,8 @@ app.characterDescription = function(c) {
   `;
   return mustache.render(t, c);
 };
+
+app.renderSpellbook = function(c) {
+    var t = '{{{spellBook}}}';
+    return mustache.render(t,c);
+}
