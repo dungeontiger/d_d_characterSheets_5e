@@ -4,9 +4,13 @@ var mustache = require('mustache');
 
 // D&D data files
 var races = [];
+// TODO: clean up load
 races['human'] = require('./rules/human.json');
+races['halfling'] = require('./rules/halfling.json');
 var classes = [];
+// TODO: clean up load
 classes['cleric'] = require('./rules/cleric.json');
+classes['rogue'] = require('./rules/rogue.json');
 var skills = require('./rules/skills.json');
 var backgrounds = require('./rules/backgrounds.json');
 var armor = require('./rules/armor.json');
@@ -144,6 +148,10 @@ app.getNumericPrefix = function(n) {
 
 app.addCalculations = function(c) {
   var race = races[c.race.toLowerCase()];
+  var subRace;
+  if (c.subRace) {
+    subRace = race.subRaces[c.subRace];
+  }
   var playerClass = classes[c.class.toLowerCase()];
   var background = backgrounds[c.background.toLowerCase()];
   // level
@@ -198,6 +206,14 @@ app.addCalculations = function(c) {
     }
     return r;
   }
+  // race string 
+  c.raceStr = function() {
+    var r = c.race;
+    if (c.subRace) {
+      r += ', ' + c.subRace;
+    }
+    return r;
+  };
   // save proficiencies
   c.savingThrowProficiencies = {
     'str': '&#9723;',
@@ -251,7 +267,12 @@ app.addCalculations = function(c) {
     var s = skills[skill];
     if (c.skills.indexOf(s.name) != -1 || background.skills.indexOf(s.name) != -1) {
       s.checked = '&#9724;';
-      s.modifier = app.modStr(app.abilityMods[c[s.ability] - 1] + c.profBonus);
+      // if expertise, prof bonus x 2
+      var profBonus = c.profBonus;
+      if (c.expertise && c.expertise.indexOf(s.name) != -1) {
+        profBonus = profBonus * 2;
+      }
+      s.modifier = app.modStr(app.abilityMods[c[s.ability] - 1] + profBonus);
     } else {
       s.checked = '&#9723;';
       s.modifier = app.modStr(app.abilityMods[c[s.ability] - 1]);
@@ -296,7 +317,6 @@ app.addCalculations = function(c) {
     return ac;
   }
   // proficiencies, abilities and features
-  // TODO: race features
   c.features = [];
   var weaponProfs = [];
   // get the armor features
@@ -306,48 +326,28 @@ app.addCalculations = function(c) {
     c.features.push(playerClass.weaponProficiencies[i]);
     weaponProfs.push(playerClass.weaponProficiencies[i]);
   }
-  for (var i = 0; i < playerClass.toolProficiencies.length; i++) {
-    c.features.push(playerClass.toolProficiencies[i]);
-  }
+  // get the tool proficiencies
+  app.calculateToolFeatures(c, playerClass, background);
   if (c.armorObj) {
     if (c.armorObj.stealth == 'disadvantage') {
       c.features.push('Disadvantage on stealth rules due to armor');
     }
   }
-  for (var i = 0; i < playerClass.levelFeatures.length; i++) {
-    // look through each level feature and look for ones that are appropriate
-    var lf = playerClass.levelFeatures[i];
-    if (lf.level <= c.level) {
-      for (var j = 0; j < lf.features.length; j++) {
-        c.features.push(lf.features[j]);
-      }
+  // race features
+  if (race.features) {
+    for (var name in race.features) {
+      c.features.push(name + ': ' + race.features[name]);
     }
   }
-  if (c.domain) {
-    var domain = playerClass.domains[c.domain];
-    // look for domain features
-    for (var i = 0; i <= c.level; i++) {
-      var f = domain.features;
-      if (f) {
-        var fl = domain.features[i.toString()];
-        for (var name in fl) {
-          c.features.push(name + ': ' + fl[name]);
-        }
-      }
-    }
-    // look for channel divinity
-    var cd = domain.channelDivinity;
-    if (cd) {
-      for (var i = 0; i <= c.level; i++) {
-        var cdi = cd[i.toString()];
-        if (cdi) {
-          for (var name in cdi) {
-            c.features.push('Channel Divinity - ' + name + ': ' + cdi[name]);
-          }
-        }
-      }
+  // subrace features
+  if (subRace && subRace.features) {
+    for (var name in subRace.features) {
+      c.features.push(name + ': ' + subRace.features[name]);
     }
   }
+  // class features
+  app.getClassFeatures(c, playerClass);
+
   if (background.feature) {
     c.features.push(background.feature);
   }
@@ -596,7 +596,7 @@ app.introBlock = function(c) {
     </table>
     <table class="tableBox">
       <tr class="tableValueBox">
-        <td class="oneThird">{{race}}</td>
+        <td class="oneThird">{{raceStr}}</td>
         <td class="oneThird">{{alignment}}</td>
         <td class="oneThird">{{experience}} ({{nextLevel}})</td>
       </tr>
@@ -980,3 +980,68 @@ app.calculateArmorFeatures = function(c, playerClass) {
     c.features.push(armorString);
   }
 };
+
+app.calculateToolFeatures = function(c, playerClass, background) {
+  // class proficiencies
+  for (var i = 0; i < playerClass.toolProficiencies.length; i++) {
+    c.features.push(playerClass.toolProficiencies[i]);
+  }
+  // background proficiencies
+  if (background.toolProficiencies) {
+    for (var i = 0; i < background.toolProficiencies.length; i++) {
+      if (c.features.indexOf(background.toolProficiencies[i]) == -1) {
+        c.features.push(background.toolProficiencies[i]);
+      }
+    }
+  }
+};
+
+app.getClassFeatures = function(c, playerClass) {
+  for (var i = 0; i < playerClass.levelFeatures.length; i++) {
+    // look through each level feature and look for ones that are appropriate
+    var lf = playerClass.levelFeatures[i];
+    if (lf.level <= c.level) {
+      for (var j = 0; j < lf.features.length; j++) {
+        c.features.push(lf.features[j]);
+      }
+    }
+  }
+  // domain is for clerics
+  if (c.domain) {
+    var domain = playerClass.domains[c.domain];
+    // look for domain features
+    for (var i = 0; i <= c.level; i++) {
+      var f = domain.features;
+      if (f) {
+        var fl = domain.features[i.toString()];
+        for (var name in fl) {
+          c.features.push(name + ': ' + fl[name]);
+        }
+      }
+    }
+    // look for channel divinity (clerics)
+    var cd = domain.channelDivinity;
+    if (cd) {
+      for (var i = 0; i <= c.level; i++) {
+        var cdi = cd[i.toString()];
+        if (cdi) {
+          for (var name in cdi) {
+            c.features.push('Channel Divinity - ' + name + ': ' + cdi[name]);
+          }
+        }
+      }
+    }
+  }
+  // sneak attack is for rogue
+  var sneakAttack;
+  for (var i = 1; i <= c.level; i++) {
+    var lf = playerClass.levelFeatures[i - 1];
+    if (lf && lf.sneakAttack) {
+      sneakAttack = lf.sneakAttack;
+    }
+  }
+  if (sneakAttack) {
+    c.features.push('Sneak Attack: ' + sneakAttack);
+  }
+};
+

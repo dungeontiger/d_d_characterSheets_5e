@@ -1,0 +1,46 @@
+{
+  "hitDice": 6,
+  "armorProficiencies": [
+    "Light Armor"
+  ],
+  "weaponProficiencies": [
+    "Simple Melee",
+    "Simple Ranged",
+    "Longsword",
+    "Shortsword",
+    "Rapier"
+  ],
+  "toolProficiencies": [
+    "Thieves' tools"
+  ],
+  "savingThrowProficiencies": [
+    "dex",
+    "int"
+  ],
+  "languages": [
+    "Thieves' Cant"
+  ],
+  "levelFeatures":[
+    {
+      "level": 1,
+      "sneakAttack": "1d6",
+      "features": [
+        
+      ]
+    },
+    {
+      "level": 2,
+      "sneakAttack": "1d6",
+      "features": [
+        
+      ]
+    },
+    {
+      "level": 3,
+      "sneakAttack": "2d6",
+      "features": [
+        "Cunning Action: Can take a bonus action to Hide, Dodge or Disengage."
+      ]
+    }
+  ]
+}
