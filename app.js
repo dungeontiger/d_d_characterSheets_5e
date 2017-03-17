@@ -299,9 +299,8 @@ app.addCalculations = function(c) {
   // TODO: race features
   c.features = [];
   var weaponProfs = [];
-  for (var i = 0; i < playerClass.armorProficiencies.length; i++) {
-    c.features.push(playerClass.armorProficiencies[i]);
-  }
+  // get the armor features
+  app.calculateArmorFeatures(c, playerClass);
   for (var i = 0; i < playerClass.weaponProficiencies.length; i++) {
     // TODO: Racial profs and others
     c.features.push(playerClass.weaponProficiencies[i]);
@@ -321,6 +320,31 @@ app.addCalculations = function(c) {
     if (lf.level <= c.level) {
       for (var j = 0; j < lf.features.length; j++) {
         c.features.push(lf.features[j]);
+      }
+    }
+  }
+  if (c.domain) {
+    var domain = playerClass.domains[c.domain];
+    // look for domain features
+    for (var i = 0; i <= c.level; i++) {
+      var f = domain.features;
+      if (f) {
+        var fl = domain.features[i.toString()];
+        for (var name in fl) {
+          c.features.push(name + ': ' + fl[name]);
+        }
+      }
+    }
+    // look for channel divinity
+    var cd = domain.channelDivinity;
+    if (cd) {
+      for (var i = 0; i <= c.level; i++) {
+        var cdi = cd[i.toString()];
+        if (cdi) {
+          for (var name in cdi) {
+            c.features.push('Channel Divinity - ' + name + ': ' + cdi[name]);
+          }
+        }
       }
     }
   }
@@ -880,4 +904,79 @@ app.characterDescription = function(c) {
 app.renderSpellbook = function(c) {
     var t = '{{{spellBook}}}';
     return mustache.render(t,c);
-}
+};
+
+app.calculateArmorFeatures = function(c, playerClass) {
+  var armorString = '';
+  var armor = { light: false, medium: false, heavy: false, shield: false };
+
+  for (var i = 0; i < playerClass.armorProficiencies.length; i++) {
+    var a = playerClass.armorProficiencies[i];
+    if (a == 'Light Armor') {
+      armor.light = true;
+    } else if (a == 'Medium Armor') {
+      armor.medium = true;
+    } else if (a == 'Heavy Armor') {
+      armor.heavy = true;
+    } else if (a == 'Shields') {
+      armor.shield = true;
+    } else {
+      // just add a specific armor to the features list
+      // TODO: eliminate if already covered by armor type proficiencies
+      c.features.push(a);
+    }
+  }
+  // check for domain armor proficiencies
+  if (c.domain) {
+    var domain = playerClass.domains[c.domain];
+    if (domain.armorProficiencies) {
+      for (var i = 0; i < domain.armorProficiencies.length; i++) {
+        var a = domain.armorProficiencies[i];
+        if (a == 'Light Armor') {
+          armor.light = true;
+        } else if (a == 'Medium Armor') {
+          armor.medium = true;
+        } else if (a == 'Heavy Armor') {
+          armor.heavy = true;
+        } else if (a == 'Shields') {
+          armor.shield = true;
+        } else {
+          // just add a specific armor to the features list
+          // TODO: eliminate if already covered by armor type proficiencies
+          c.features.push(a);
+        }
+      }
+    }
+  }
+  // build the armor string
+  if (armor.light) {
+    if (armorString.length > 0) {
+      armorString += ', ';
+    }
+    armorString += 'Light';
+  }
+  if (armor.medium) {
+    if (armorString.length > 0) {
+      armorString += ', ';
+    }
+    armorString += 'Medium';
+  }
+  if (armor.heavy) {
+    if (armorString.length > 0) {
+      armorString += ', ';
+    }
+    armorString += 'Heavy';
+  }
+  if (armorString.length > 0) {
+    armorString += ' Armor';
+  }
+  if (armor.shield) {
+    if (armorString.length > 0) {
+      armorString += ' and ';
+    }
+    armorString += 'Shields';
+  }
+  if (armorString.length > 0) {
+    c.features.push(armorString);
+  }
+};
