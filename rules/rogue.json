@@ -23,23 +23,33 @@
   "levelFeatures":[
     {
       "level": 1,
-      "sneakAttack": "1d6",
       "features": [
-        
+        {
+          "label": "Sneak Attack",
+          "description": "Add 1d6 dmg to attacks when you have advantage on attack roll."
+        }
       ]
     },
     {
       "level": 2,
-      "sneakAttack": "1d6",
       "features": [
-        
+        {
+          "label": "Sneak Attack",
+          "description": "Add 1d6 dmg to attacks when you have advantage on attack roll."
+        }
       ]
     },
     {
       "level": 3,
-      "sneakAttack": "2d6",
       "features": [
-        "Cunning Action: Can take a bonus action to Hide, Dodge or Disengage."
+        {
+          "label": "Cunning Action",
+          "description": "Can take a bonus action to Hide, Dodge or Disengage."
+        },
+        {
+          "label": "Sneak Attack",
+          "description": "Add 2d6 dmg to attacks when you have advantage on attack roll."
+        }
       ]
     }
   ]

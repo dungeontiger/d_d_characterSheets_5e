@@ -5,21 +5,36 @@
     "Common",
     "Halfling"
   ],
-  "features": {
-    "Lucky": "When you roll a 1 on the d20 for an attack, ability check or saving throw you can reroll but must use this new value.",
-    "Brave": "Advantage on saving throw vs fear.",
-    "Nimbleness": "Can move through the space of any creature that is larger size than you."
-  },
+  "features": [
+    {
+      "label": "Lucky",
+      "description": "When you roll a 1 on the d20 for an attack, ability check or saving throw you can reroll but must use this new value."
+    },
+    {
+      "label": "Brave",
+      "description": "Advantage on saving throw vs fear."
+    },
+    {
+      "label": "Nimbleness",
+      "description": "Can move through the space of any creature that is larger size than you."
+    }
+  ],
   "subRaces": {
     "Lightfoot" : {
-      "features": {
-        "Naturally Stealthy": "Can attempt to hide even when you are obscured only a creature that is at least on size larger than you."
-      }
+      "features": [
+        {
+          "label": "Naturally Stealthy",
+          "description": "Can attempt to hide even when you are obscured only a creature that is at least on size larger than you."
+        }
+      ]
     },
     "Stout": {
-      "features": {
-        "Stout Resilience": "Advantage on saving throws vs poison and resistant to poison damage."
-      }
+      "features": [
+        {
+          "label": "Stout Resilience",
+          "description": "Advantage on saving throws vs poison and resistant to poison damage."
+        }
+      ]
     }
   }
 }

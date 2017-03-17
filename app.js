@@ -193,7 +193,17 @@ app.addCalculations = function(c) {
   c.speed = race.speed; // TODO: possibly affected by armor
   c.size = race.size;
   for (var i = 0; i < race.languages.length; i++) {
-    c.languages.push(race.languages[i]);
+    if (c.languages.indexOf(race.languages[i]) == -1) {
+      c.languages.push(race.languages[i]);
+    }
+  }
+  // look for class specific languages
+  if (playerClass.languages) {
+    for (var i = 0; i < playerClass.languages.length; i++) {
+      if (c.languages.indexOf(playerClass.languages[i]) == -1) {
+        c.languages.push(playerClass.languages[i]);
+      }
+    }
   }
   c.languages.sort();
   c.languageStr = function() {
@@ -321,35 +331,26 @@ app.addCalculations = function(c) {
   var weaponProfs = [];
   // get the armor features
   app.calculateArmorFeatures(c, playerClass);
-  for (var i = 0; i < playerClass.weaponProficiencies.length; i++) {
-    // TODO: Racial profs and others
-    c.features.push(playerClass.weaponProficiencies[i]);
-    weaponProfs.push(playerClass.weaponProficiencies[i]);
-  }
+  // get the weapon features
+  app.calculateWeaponFeatures(c, playerClass, weaponProfs)
   // get the tool proficiencies
   app.calculateToolFeatures(c, playerClass, background);
   if (c.armorObj) {
     if (c.armorObj.stealth == 'disadvantage') {
-      c.features.push('Disadvantage on stealth rules due to armor');
+      c.features.push({'label': 'Not Stealthy', 'description': 'Disadvantage on stealth rules due to armor'});
     }
   }
   // race features
-  if (race.features) {
-    for (var name in race.features) {
-      c.features.push(name + ': ' + race.features[name]);
-    }
-  }
+  app.getFeatures(c, race);
   // subrace features
-  if (subRace && subRace.features) {
-    for (var name in subRace.features) {
-      c.features.push(name + ': ' + subRace.features[name]);
-    }
-  }
+  app.getFeatures(c, subRace);
   // class features
   app.getClassFeatures(c, playerClass);
-
-  if (background.feature) {
-    c.features.push(background.feature);
+  // background features
+  if (background.features) {
+    for (var i = 0; i < background.features.length; i++) {
+      c.features.push(background.features[i]);
+    }
   }
   // weapons
   c.weaponStats = function() {
@@ -405,7 +406,7 @@ app.addCalculations = function(c) {
     return r;
   }
   // spell abilities
-  if (c.features.indexOf('Spellcasting') != -1) {
+  if (app.isSpellcaster(c)) {
     c.castingAbility = playerClass.castingAbility;
     c.spellSaveDC = 8 + c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
     c.spellAttackMod = c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
@@ -711,7 +712,7 @@ app.skills = function(c) {
         <td valign="top">
           <table>
             {{#features}}
-            <tr><td>{{.}}</td></tr>
+            <tr><td><b>{{label}}</b>: {{description}}</td></tr>
             {{/features}}
           </table>
         </td>
@@ -788,7 +789,7 @@ app.weapons = function(c) {
 };
 
 app.spells = function(c) {
-  if (c.features.indexOf('Spellcasting') == -1) {
+  if (!app.isSpellcaster(c)) {
     // not a spell casting class
     return '';
   }
@@ -902,8 +903,10 @@ app.characterDescription = function(c) {
 };
 
 app.renderSpellbook = function(c) {
-    var t = '{{{spellBook}}}';
-    return mustache.render(t,c);
+    if (app.isSpellcaster(c)) {
+      var t = '{{{spellBook}}}';
+      return mustache.render(t,c);
+    }
 };
 
 app.calculateArmorFeatures = function(c, playerClass) {
@@ -923,7 +926,7 @@ app.calculateArmorFeatures = function(c, playerClass) {
     } else {
       // just add a specific armor to the features list
       // TODO: eliminate if already covered by armor type proficiencies
-      c.features.push(a);
+      c.features.push({ 'label': 'armor', 'description': a});
     }
   }
   // check for domain armor proficiencies
@@ -943,7 +946,7 @@ app.calculateArmorFeatures = function(c, playerClass) {
         } else {
           // just add a specific armor to the features list
           // TODO: eliminate if already covered by armor type proficiencies
-          c.features.push(a);
+          c.features.push({ 'label': 'armor', 'description': a});
         }
       }
     }
@@ -967,9 +970,6 @@ app.calculateArmorFeatures = function(c, playerClass) {
     }
     armorString += 'Heavy';
   }
-  if (armorString.length > 0) {
-    armorString += ' Armor';
-  }
   if (armor.shield) {
     if (armorString.length > 0) {
       armorString += ' and ';
@@ -977,22 +977,46 @@ app.calculateArmorFeatures = function(c, playerClass) {
     armorString += 'Shields';
   }
   if (armorString.length > 0) {
-    c.features.push(armorString);
+    c.features.push({ 'label': 'Armor', 'description': armorString});
+  }
+};
+
+app.calculateWeaponFeatures = function(c, playerClass, weaponProfs) {
+  var weaponStr = '';
+  for (var i = 0; i < playerClass.weaponProficiencies.length; i++) {
+    if (weaponStr.length > 0) {
+      weaponStr += ', ';
+    }
+    weaponStr += playerClass.weaponProficiencies[i];
+    weaponProfs.push(playerClass.weaponProficiencies[i]);
+  }
+  if (weaponStr.length > 0) {
+    c.features.push({'label': 'Weapons', 'description': weaponStr});
   }
 };
 
 app.calculateToolFeatures = function(c, playerClass, background) {
   // class proficiencies
+  var toolStr ='';
   for (var i = 0; i < playerClass.toolProficiencies.length; i++) {
-    c.features.push(playerClass.toolProficiencies[i]);
+    if (toolStr.length > 0) {
+      toolStr += ', ';
+    }
+    toolStr += playerClass.toolProficiencies[i];
   }
   // background proficiencies
   if (background.toolProficiencies) {
     for (var i = 0; i < background.toolProficiencies.length; i++) {
-      if (c.features.indexOf(background.toolProficiencies[i]) == -1) {
-        c.features.push(background.toolProficiencies[i]);
+      if (toolStr.indexOf(background.toolProficiencies[i]) == -1) {
+        if (toolStr.length > 0) {
+          toolStr += ', ';
+        }
+        toolStr += background.toolProficiencies[i];
       }
     }
+  }
+  if (toolStr.length > 0) {
+    c.features.push({'label': 'Tools', 'description': toolStr});
   }
 };
 
@@ -1001,47 +1025,44 @@ app.getClassFeatures = function(c, playerClass) {
     // look through each level feature and look for ones that are appropriate
     var lf = playerClass.levelFeatures[i];
     if (lf.level <= c.level) {
-      for (var j = 0; j < lf.features.length; j++) {
-        c.features.push(lf.features[j]);
-      }
+      app.getFeatures(c, lf);
     }
   }
   // domain is for clerics
   if (c.domain) {
     var domain = playerClass.domains[c.domain];
+    var f = domain.levelFeatures;
     // look for domain features
-    for (var i = 0; i <= c.level; i++) {
-      var f = domain.features;
-      if (f) {
-        var fl = domain.features[i.toString()];
-        for (var name in fl) {
-          c.features.push(name + ': ' + fl[name]);
-        }
-      }
+    for (var i = 1; f && i <= c.level; i++) {
+      var fl = f[i.toString()];
+      app.getFeatures(c, fl);
     }
-    // look for channel divinity (clerics)
-    var cd = domain.channelDivinity;
-    if (cd) {
-      for (var i = 0; i <= c.level; i++) {
-        var cdi = cd[i.toString()];
-        if (cdi) {
-          for (var name in cdi) {
-            c.features.push('Channel Divinity - ' + name + ': ' + cdi[name]);
-          }
-        }
-      }
-    }
-  }
-  // sneak attack is for rogue
-  var sneakAttack;
-  for (var i = 1; i <= c.level; i++) {
-    var lf = playerClass.levelFeatures[i - 1];
-    if (lf && lf.sneakAttack) {
-      sneakAttack = lf.sneakAttack;
-    }
-  }
-  if (sneakAttack) {
-    c.features.push('Sneak Attack: ' + sneakAttack);
   }
 };
 
+// generic feature getting, eliminates ones with the same label
+app.getFeatures = function(c, o) {
+  if (o && o.features) {
+    for (var i = 0;  i < o.features.length; i++) {
+      // assuming that features are added in order, that is level order
+      // higher level features added last and replace lower level ones of the same label
+      for (var j = 0; j < c.features.length; j++) {
+        if (c.features[j].label == o.features[i].label) {
+          // remove this feature since it will be replaced
+          c.features.splice(j, 1);
+        }
+      }
+      c.features.push(o.features[i]);
+    }
+  }
+};
+
+// returns true if has feature 'spellcasting'
+app.isSpellcaster = function(c) {
+  for (var i = 0; i < c.features.length; i++) {
+    if (c.features[i].label == 'Spellcasting') {
+      return true;
+    }
+  }
+  return false;
+};

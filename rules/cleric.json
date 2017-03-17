@@ -26,7 +26,10 @@
         "1": 2
       },
       "features" : [
-        "Spellcasting"
+        {
+          "label": "Spellcasting",
+          "description": "Can cast cleric spells."
+        }
       ]
     },
     {
@@ -36,7 +39,14 @@
         "1": 3
       },
       "features" : [
-        "Channel Divinity once per rest"
+        {
+          "label": "Channel Divinity",
+          "description": "Use one Channel Divinity ability once per rest."
+        },
+        {
+          "label": "Channel Divinity - Turn Undead",
+          "description": "Undead within 30ft save vs Wisdom for dash away for 1 minute."
+        }
       ]
     },
     {
@@ -57,7 +67,6 @@
         "2": 3
      },
      "features": [
-       "Ability Score Improvement"
      ]
     },    
     {
@@ -95,15 +104,6 @@
           "Legend Lore",
           "Scrying"
         ]
-      },
-      "channelDivinity": {
-        "2": {
-          "Turn Undead": "Undead within 30ft save vs Wisdom for dash away for 1 minute.",
-          "Knowledge of the Ages": "As an action, choose proficiency in one tool or skill for 10 minutes."
-        },
-        "5": {
-          "Destroy Undead": "Turned undead with CR less than 1/2 destroyed."
-        }
       }
     },
     "Life": {
@@ -132,18 +132,30 @@
       "armorProficiencies": [
         "Heavy Armor"
       ],
-      "features": {
+      "levelFeatures": {
         "1": {
-          "Disciple of Life": "Spells 1st and higher heal an additional 2 + spell's level HP."
-        }
-      },
-      "channelDivinity": {
+          "features": [
+            {
+              "label": "Disciple of Life",
+              "description": "Spells 1st and higher heal an additional 2 + spell's level HP."
+            }
+          ]
+        },
         "2": {
-          "Turn Undead": "Undead within 30ft save vs Wisdom for dash away for 1 minute.",
-          "Preserve Life": "Restore HP equal to 5 times your level divided amongst any number of creatures within 30ft. No creature can be healed more than half its maximum HP."
+          "features": [
+            {
+              "label": "Channel Divinity - Preserve Life",
+              "description": "Restore HP equal to 5 times your level divided amongst any number of creatures within 30ft. No creature can be healed more than half its maximum HP."
+            }
+          ]
         },
         "5": {
-          "Destroy Undead": "Turned undead with CR less than 1/2 destroyed."
+          "features": [
+            {
+              "label": "Channel Divinity - Destroy Undead",
+              "description": "Turned undead with CR less than 1/2 destroyed."
+            }
+          ]
         }
       }
     },
