@@ -52,5 +52,40 @@
         }
       ]
     }
-  ]
+  ],
+  "archetypes": {
+    "Thief": {
+
+    },
+    "Assassin": {
+
+    },
+    "Arcane Trickster": {
+      "levelFeatures": [
+        {
+          "level": 3,
+          "knownSpells": 3,
+          "spellSlots": {
+            "cantrips": 3,
+            "1": 2
+           },
+           "spells": {
+            "cantrips": [
+              "Mage Hand"
+            ]
+           },
+           "features": [
+             {
+               "label": "Spellcasting",
+               "description": "Can cast enchantment and illusion wizard spells."
+             },
+             {
+               "label": "Mage Hand Legerdemain",
+               "description": "Your mage hand can be invisible. You can stow or retrieve one object in a container worn or carried by another creature.  You can pick locks and disarm traps with theive's tools."
+             }
+           ]
+        }
+      ]
+    }
+  }
 }

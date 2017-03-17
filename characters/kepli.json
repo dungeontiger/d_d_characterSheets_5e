@@ -76,5 +76,16 @@
   "expertise": [
     "Sleight of Hand",
     "Stealth"
-  ]
+  ],
+  "spells": {
+    "cantrips": [
+      "Ray of Frost",
+      "Minor Illusion"
+    ],
+    "1": [
+      "Sleep",
+      "Illusory Script",
+      "Feather Fall"
+    ]
+  }
 }

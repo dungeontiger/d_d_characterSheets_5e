@@ -132,8 +132,9 @@
       "armorProficiencies": [
         "Heavy Armor"
       ],
-      "levelFeatures": {
-        "1": {
+      "levelFeatures": [
+        {
+          "level": 1,
           "features": [
             {
               "label": "Disciple of Life",
@@ -141,7 +142,8 @@
             }
           ]
         },
-        "2": {
+        {
+          "level": 2,
           "features": [
             {
               "label": "Channel Divinity - Preserve Life",
@@ -149,7 +151,8 @@
             }
           ]
         },
-        "5": {
+        {
+          "level": 5,
           "features": [
             {
               "label": "Channel Divinity - Destroy Undead",
@@ -157,7 +160,7 @@
             }
           ]
         }
-      }
+      ]
     },
     "Light" :{},
     "Nature" :{},

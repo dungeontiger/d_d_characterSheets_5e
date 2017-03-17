@@ -162,8 +162,10 @@ app.addCalculations = function(c) {
   }
   c.level = i;
   // class description
-  if (c.class == 'Cleric') {
-    c.classDesc = 'Cleric, ' + c.domain + ' Domain';
+  if (c.domain) {
+    c.classDesc = c.class + ', ' + c.domain + ' Domain';
+  } else if (c.archetype) {
+    c.classDesc = c.class + ', ' + c.archetype;
   } else {
     c.classDesc = c.class;
   }
@@ -439,14 +441,9 @@ app.addCalculations = function(c) {
     // clerics have all spells at their disposal
     // TODO for other classes
     var r ='';
-    var spells = Spells.getSpellsByClass(c.class, c.level - 1);
+    var spells = Spells.getKnownSpells(c, playerClass);
     for (var i = 0; i < 10; i++) {
-      var spellSlots;
-      if (i == 0) {
-        spellSlots = playerClass.levelFeatures[c.level - 1].spellSlots.cantrips;
-      } else {
-        spellSlots = playerClass.levelFeatures[c.level - 1].spellSlots[i.toString()];
-      }
+      var spellSlots = Spells.getSpellslots(c, playerClass, i);
       if (!spellSlots) {
         break;
       }
@@ -464,7 +461,10 @@ app.addCalculations = function(c) {
         levelName += '</span></td></tr>'
       }
 
-      var domain = playerClass.domains[c.domain];
+      var domain;
+      if (c.domain) {
+        domain = playerClass.domains[c.domain];
+      }
 
       r += '<table><tr><td colspan="9" class="header" style="text-align:left">' + levelName + '</td></tr>';
       r += `<tr>
@@ -490,7 +490,7 @@ app.addCalculations = function(c) {
           if (spell.level == 'Cantrip') {
             box = '';
           }
-          if (spell.level != 'Cantrip') {
+          if (spell.level != 'Cantrip' && domain) {
             var domainSpells = domain.knownDomainSpells[i.toString()];
             if (domainSpells.indexOf(spell.name) != -1) {
               box = '&#9724;';
@@ -518,7 +518,7 @@ app.addCalculations = function(c) {
   c.spellBook = function() {
     // this will list ALL spells, need to filter for known spells for
     // other classes
-    var spells = Spells.getSpellsByClass(c.class, c.level - 1);
+    var spells = Spells.getKnownSpells(c, playerClass);
     var r = '<div class="newPage title center screenDivider">Spellbook</div>';
     r += '<table class="spellbook"><tr valign="top">';
     for (var i = 0; i < spells.length; i++) {
@@ -1021,6 +1021,7 @@ app.calculateToolFeatures = function(c, playerClass, background) {
 };
 
 app.getClassFeatures = function(c, playerClass) {
+  // TODO: make this look like the others
   for (var i = 0; i < playerClass.levelFeatures.length; i++) {
     // look through each level feature and look for ones that are appropriate
     var lf = playerClass.levelFeatures[i];
@@ -1031,12 +1032,12 @@ app.getClassFeatures = function(c, playerClass) {
   // domain is for clerics
   if (c.domain) {
     var domain = playerClass.domains[c.domain];
-    var f = domain.levelFeatures;
-    // look for domain features
-    for (var i = 1; f && i <= c.level; i++) {
-      var fl = f[i.toString()];
-      app.getFeatures(c, fl);
-    }
+    app.getLevelFeatures(c, domain);
+  }
+  // get the archetype features
+  if (c.archetype && playerClass.archetypes[c.archetype]) {
+    var at = playerClass.archetypes[c.archetype];
+    app.getLevelFeatures(c, at);
   }
 };
 
@@ -1055,6 +1056,16 @@ app.getFeatures = function(c, o) {
       c.features.push(o.features[i]);
     }
   }
+};
+
+// get level dependent features
+app.getLevelFeatures = function(c, o) {
+    for (var i = 0; o.levelFeatures && i < o.levelFeatures.length; i++) {
+      var lf = o.levelFeatures[i];
+      if (lf && lf.level <= c.level) {
+        app.getFeatures(c, lf);
+      }
+    }
 };
 
 // returns true if has feature 'spellcasting'
