@@ -46,7 +46,7 @@
       "features": [
         {
           "label": "Cunning Action",
-          "description": "Can take a bonus action to Hide, Dodge or Disengage."
+          "description": "Can take a bonus action to Hide, Dash or Disengage."
         },
         {
           "label": "Sneak Attack",
