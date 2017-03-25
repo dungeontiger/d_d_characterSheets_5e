@@ -1,6 +1,24 @@
 {
   "sage": {
-    "skills" : [ "Arcana", "History"],
-    "feature" : "Researcher: If you don't know a piece of lore or an answer to a question you often know where to find it."
+    "skills" : ["Arcana", "History"],
+    "features" : [
+      {
+        "label": "Researcher",
+        "description": "If you don't know a piece of lore or an answer to a question you often know where to find it."
+      }
+    ]
+  },
+  "urchin": {
+    "skills": ["Sleight of Hand", "Stealth"],
+    "features": [
+      {
+        "label": "City Secrets",
+        "description": "You can find urban passages others miss.  You and others you lead can travel between two city locations twice as fast as normal when not in combat."
+      }
+    ],
+    "toolProficiencies": [
+      "Disguise kit",
+      "Thieves' tools"
+    ]
   }
 }

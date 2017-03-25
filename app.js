@@ -4,9 +4,13 @@ var mustache = require('mustache');
 
 // D&D data files
 var races = [];
+// TODO: clean up load
 races['human'] = require('./rules/human.json');
+races['halfling'] = require('./rules/halfling.json');
 var classes = [];
+// TODO: clean up load
 classes['cleric'] = require('./rules/cleric.json');
+classes['rogue'] = require('./rules/rogue.json');
 var skills = require('./rules/skills.json');
 var backgrounds = require('./rules/backgrounds.json');
 var armor = require('./rules/armor.json');
@@ -144,6 +148,10 @@ app.getNumericPrefix = function(n) {
 
 app.addCalculations = function(c) {
   var race = races[c.race.toLowerCase()];
+  var subRace;
+  if (c.subRace) {
+    subRace = race.subRaces[c.subRace];
+  }
   var playerClass = classes[c.class.toLowerCase()];
   var background = backgrounds[c.background.toLowerCase()];
   // level
@@ -154,8 +162,10 @@ app.addCalculations = function(c) {
   }
   c.level = i;
   // class description
-  if (c.class == 'Cleric') {
-    c.classDesc = 'Cleric, ' + c.domain + ' Domain';
+  if (c.domain) {
+    c.classDesc = c.class + ', ' + c.domain + ' Domain';
+  } else if (c.archetype) {
+    c.classDesc = c.class + ', ' + c.archetype;
   } else {
     c.classDesc = c.class;
   }
@@ -185,7 +195,17 @@ app.addCalculations = function(c) {
   c.speed = race.speed; // TODO: possibly affected by armor
   c.size = race.size;
   for (var i = 0; i < race.languages.length; i++) {
-    c.languages.push(race.languages[i]);
+    if (c.languages.indexOf(race.languages[i]) == -1) {
+      c.languages.push(race.languages[i]);
+    }
+  }
+  // look for class specific languages
+  if (playerClass.languages) {
+    for (var i = 0; i < playerClass.languages.length; i++) {
+      if (c.languages.indexOf(playerClass.languages[i]) == -1) {
+        c.languages.push(playerClass.languages[i]);
+      }
+    }
   }
   c.languages.sort();
   c.languageStr = function() {
@@ -198,6 +218,14 @@ app.addCalculations = function(c) {
     }
     return r;
   }
+  // race string 
+  c.raceStr = function() {
+    var r = c.race;
+    if (c.subRace) {
+      r += ', ' + c.subRace;
+    }
+    return r;
+  };
   // save proficiencies
   c.savingThrowProficiencies = {
     'str': '&#9723;',
@@ -251,7 +279,12 @@ app.addCalculations = function(c) {
     var s = skills[skill];
     if (c.skills.indexOf(s.name) != -1 || background.skills.indexOf(s.name) != -1) {
       s.checked = '&#9724;';
-      s.modifier = app.modStr(app.abilityMods[c[s.ability] - 1] + c.profBonus);
+      // if expertise, prof bonus x 2
+      var profBonus = c.profBonus;
+      if (c.expertise && c.expertise.indexOf(s.name) != -1) {
+        profBonus = profBonus * 2;
+      }
+      s.modifier = app.modStr(app.abilityMods[c[s.ability] - 1] + profBonus);
     } else {
       s.checked = '&#9723;';
       s.modifier = app.modStr(app.abilityMods[c[s.ability] - 1]);
@@ -296,60 +329,30 @@ app.addCalculations = function(c) {
     return ac;
   }
   // proficiencies, abilities and features
-  // TODO: race features
   c.features = [];
   var weaponProfs = [];
   // get the armor features
   app.calculateArmorFeatures(c, playerClass);
-  for (var i = 0; i < playerClass.weaponProficiencies.length; i++) {
-    // TODO: Racial profs and others
-    c.features.push(playerClass.weaponProficiencies[i]);
-    weaponProfs.push(playerClass.weaponProficiencies[i]);
-  }
-  for (var i = 0; i < playerClass.toolProficiencies.length; i++) {
-    c.features.push(playerClass.toolProficiencies[i]);
-  }
+  // get the weapon features
+  app.calculateWeaponFeatures(c, playerClass, weaponProfs)
+  // get the tool proficiencies
+  app.calculateToolFeatures(c, playerClass, background);
   if (c.armorObj) {
     if (c.armorObj.stealth == 'disadvantage') {
-      c.features.push('Disadvantage on stealth rules due to armor');
+      c.features.push({'label': 'Not Stealthy', 'description': 'Disadvantage on stealth rules due to armor'});
     }
   }
-  for (var i = 0; i < playerClass.levelFeatures.length; i++) {
-    // look through each level feature and look for ones that are appropriate
-    var lf = playerClass.levelFeatures[i];
-    if (lf.level <= c.level) {
-      for (var j = 0; j < lf.features.length; j++) {
-        c.features.push(lf.features[j]);
-      }
+  // race features
+  app.getFeatures(c, race);
+  // subrace features
+  app.getFeatures(c, subRace);
+  // class features
+  app.getClassFeatures(c, playerClass);
+  // background features
+  if (background.features) {
+    for (var i = 0; i < background.features.length; i++) {
+      c.features.push(background.features[i]);
     }
-  }
-  if (c.domain) {
-    var domain = playerClass.domains[c.domain];
-    // look for domain features
-    for (var i = 0; i <= c.level; i++) {
-      var f = domain.features;
-      if (f) {
-        var fl = domain.features[i.toString()];
-        for (var name in fl) {
-          c.features.push(name + ': ' + fl[name]);
-        }
-      }
-    }
-    // look for channel divinity
-    var cd = domain.channelDivinity;
-    if (cd) {
-      for (var i = 0; i <= c.level; i++) {
-        var cdi = cd[i.toString()];
-        if (cdi) {
-          for (var name in cdi) {
-            c.features.push('Channel Divinity - ' + name + ': ' + cdi[name]);
-          }
-        }
-      }
-    }
-  }
-  if (background.feature) {
-    c.features.push(background.feature);
   }
   // weapons
   c.weaponStats = function() {
@@ -405,11 +408,13 @@ app.addCalculations = function(c) {
     return r;
   }
   // spell abilities
-  if (c.features.indexOf('Spellcasting') != -1) {
+  if (Spells.isSpellcaster(c)) {
     c.castingAbility = playerClass.castingAbility;
     c.spellSaveDC = 8 + c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
     c.spellAttackMod = c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
-    c.preparedSpells = app.abilityMods[c[c.castingAbility] - 1] + c.level;
+    if (playerClass.preparedSpells) {
+      c.preparedSpells = app.abilityMods[c[c.castingAbility] - 1] + c.level;
+    }
   }
   // gather spell
   if (c.domain) {
@@ -438,14 +443,9 @@ app.addCalculations = function(c) {
     // clerics have all spells at their disposal
     // TODO for other classes
     var r ='';
-    var spells = Spells.getSpellsByClass(c.class, c.level - 1);
+    var spells = Spells.getCastableSpells(c, playerClass);
     for (var i = 0; i < 10; i++) {
-      var spellSlots;
-      if (i == 0) {
-        spellSlots = playerClass.levelFeatures[c.level - 1].spellSlots.cantrips;
-      } else {
-        spellSlots = playerClass.levelFeatures[c.level - 1].spellSlots[i.toString()];
-      }
+      var spellSlots = Spells.getSpellslots(c, playerClass, i);
       if (!spellSlots) {
         break;
       }
@@ -463,7 +463,10 @@ app.addCalculations = function(c) {
         levelName += '</span></td></tr>'
       }
 
-      var domain = playerClass.domains[c.domain];
+      var domain;
+      if (c.domain) {
+        domain = playerClass.domains[c.domain];
+      }
 
       r += '<table><tr><td colspan="9" class="header" style="text-align:left">' + levelName + '</td></tr>';
       r += `<tr>
@@ -481,7 +484,7 @@ app.addCalculations = function(c) {
       for (var j = 0; j < spells.length; j++) {
         // write out the details for each spell of this level
         var spell = spells[j];
-        if ((i == 0 && spell.level == 'Cantrip' && c.spells.cantrips.indexOf(spell.name) != -1) || 
+        if ((i == 0 && Spells.castableCantrip(c, spell)) || 
           (i == parseInt(spell.level.substr(0,1)))) {
           r += '<tr>';
           // check to see if this spell is prepared
@@ -489,7 +492,7 @@ app.addCalculations = function(c) {
           if (spell.level == 'Cantrip') {
             box = '';
           }
-          if (spell.level != 'Cantrip') {
+          if (spell.level != 'Cantrip' && domain) {
             var domainSpells = domain.knownDomainSpells[i.toString()];
             if (domainSpells.indexOf(spell.name) != -1) {
               box = '&#9724;';
@@ -515,9 +518,7 @@ app.addCalculations = function(c) {
 
   // render the spell book
   c.spellBook = function() {
-    // this will list ALL spells, need to filter for known spells for
-    // other classes
-    var spells = Spells.getSpellsByClass(c.class, c.level - 1);
+    var spells = Spells.getSpellsForSpellbook(c, playerClass);
     var r = '<div class="newPage title center screenDivider">Spellbook</div>';
     r += '<table class="spellbook"><tr valign="top">';
     for (var i = 0; i < spells.length; i++) {
@@ -596,7 +597,7 @@ app.introBlock = function(c) {
     </table>
     <table class="tableBox">
       <tr class="tableValueBox">
-        <td class="oneThird">{{race}}</td>
+        <td class="oneThird">{{raceStr}}</td>
         <td class="oneThird">{{alignment}}</td>
         <td class="oneThird">{{experience}} ({{nextLevel}})</td>
       </tr>
@@ -711,7 +712,7 @@ app.skills = function(c) {
         <td valign="top">
           <table>
             {{#features}}
-            <tr><td>{{.}}</td></tr>
+            <tr><td><b>{{label}}</b>: {{description}}</td></tr>
             {{/features}}
           </table>
         </td>
@@ -788,28 +789,49 @@ app.weapons = function(c) {
 };
 
 app.spells = function(c) {
-  if (c.features.indexOf('Spellcasting') == -1) {
+  var playerClass = classes[c.class.toLowerCase()];
+  if (!Spells.isSpellcaster(c)) {
     // not a spell casting class
     return '';
   }
-  var t = `
-    <div class="newPage title center screenDivider">Spells</div>
-    <table class="tableBox">
-      <tr class="tableValueBox">
-        <td class="oneQuarter">{{castingAbility}}</td>
-        <td class="oneQuarter">{{spellSaveDC}}</td>
-        <td class="oneQuarter">{{spellAttackMod}}</td>
-        <td class="oneQuarter">{{preparedSpells}}</td>
-      </tr>
-      <tr>
-        <td class="label">Spellcasting Ability</td>
-        <td class="label">Spell Save DC</td>
-        <td class="label">Spell Attack Mod</td>
-        <td class="label">Prepared Spells</td>
-      </tr>
-  </table>
-  {{{spellTable}}}
-  `;
+  var t;
+  if (playerClass.preparedSpells) {
+    t = `
+      <div class="newPage title center screenDivider">Spells</div>
+      <table class="tableBox">
+        <tr class="tableValueBox">
+          <td class="oneQuarter">{{castingAbility}}</td>
+          <td class="oneQuarter">{{spellSaveDC}}</td>
+          <td class="oneQuarter">{{spellAttackMod}}</td>
+          <td class="oneQuarter">{{preparedSpells}}</td>
+        </tr>
+        <tr>
+          <td class="label">Spellcasting Ability</td>
+          <td class="label">Spell Save DC</td>
+          <td class="label">Spell Attack Mod</td>
+          <td class="label">Prepared Spells</td>
+        </tr>
+    </table>
+    {{{spellTable}}}
+    `;
+  } else {
+    t = `
+      <div class="newPage title center screenDivider">Spells</div>
+      <table class="tableBox">
+        <tr class="tableValueBox">
+          <td class="oneQuarter">{{castingAbility}}</td>
+          <td class="oneQuarter">{{spellSaveDC}}</td>
+          <td class="oneQuarter">{{spellAttackMod}}</td>
+        </tr>
+        <tr>
+          <td class="label">Spellcasting Ability</td>
+          <td class="label">Spell Save DC</td>
+          <td class="label">Spell Attack Mod</td>
+        </tr>
+    </table>
+    {{{spellTable}}}
+    `;
+  }
   return mustache.render(t, c);
 };
 
@@ -902,8 +924,10 @@ app.characterDescription = function(c) {
 };
 
 app.renderSpellbook = function(c) {
-    var t = '{{{spellBook}}}';
-    return mustache.render(t,c);
+    if (Spells.isSpellcaster(c)) {
+      var t = '{{{spellBook}}}';
+      return mustache.render(t,c);
+    }
 };
 
 app.calculateArmorFeatures = function(c, playerClass) {
@@ -923,7 +947,7 @@ app.calculateArmorFeatures = function(c, playerClass) {
     } else {
       // just add a specific armor to the features list
       // TODO: eliminate if already covered by armor type proficiencies
-      c.features.push(a);
+      c.features.push({ 'label': 'armor', 'description': a});
     }
   }
   // check for domain armor proficiencies
@@ -943,7 +967,7 @@ app.calculateArmorFeatures = function(c, playerClass) {
         } else {
           // just add a specific armor to the features list
           // TODO: eliminate if already covered by armor type proficiencies
-          c.features.push(a);
+          c.features.push({ 'label': 'armor', 'description': a});
         }
       }
     }
@@ -967,9 +991,6 @@ app.calculateArmorFeatures = function(c, playerClass) {
     }
     armorString += 'Heavy';
   }
-  if (armorString.length > 0) {
-    armorString += ' Armor';
-  }
   if (armor.shield) {
     if (armorString.length > 0) {
       armorString += ' and ';
@@ -977,6 +998,93 @@ app.calculateArmorFeatures = function(c, playerClass) {
     armorString += 'Shields';
   }
   if (armorString.length > 0) {
-    c.features.push(armorString);
+    c.features.push({ 'label': 'Armor', 'description': armorString});
   }
+};
+
+app.calculateWeaponFeatures = function(c, playerClass, weaponProfs) {
+  var weaponStr = '';
+  for (var i = 0; i < playerClass.weaponProficiencies.length; i++) {
+    if (weaponStr.length > 0) {
+      weaponStr += ', ';
+    }
+    weaponStr += playerClass.weaponProficiencies[i];
+    weaponProfs.push(playerClass.weaponProficiencies[i]);
+  }
+  if (weaponStr.length > 0) {
+    c.features.push({'label': 'Weapons', 'description': weaponStr});
+  }
+};
+
+app.calculateToolFeatures = function(c, playerClass, background) {
+  // class proficiencies
+  var toolStr ='';
+  for (var i = 0; i < playerClass.toolProficiencies.length; i++) {
+    if (toolStr.length > 0) {
+      toolStr += ', ';
+    }
+    toolStr += playerClass.toolProficiencies[i];
+  }
+  // background proficiencies
+  if (background.toolProficiencies) {
+    for (var i = 0; i < background.toolProficiencies.length; i++) {
+      if (toolStr.indexOf(background.toolProficiencies[i]) == -1) {
+        if (toolStr.length > 0) {
+          toolStr += ', ';
+        }
+        toolStr += background.toolProficiencies[i];
+      }
+    }
+  }
+  if (toolStr.length > 0) {
+    c.features.push({'label': 'Tools', 'description': toolStr});
+  }
+};
+
+app.getClassFeatures = function(c, playerClass) {
+  // TODO: make this look like the others
+  for (var i = 0; i < playerClass.levelFeatures.length; i++) {
+    // look through each level feature and look for ones that are appropriate
+    var lf = playerClass.levelFeatures[i];
+    if (lf.level <= c.level) {
+      app.getFeatures(c, lf);
+    }
+  }
+  // domain is for clerics
+  if (c.domain) {
+    var domain = playerClass.domains[c.domain];
+    app.getLevelFeatures(c, domain);
+  }
+  // get the archetype features
+  if (c.archetype && playerClass.archetypes[c.archetype]) {
+    var at = playerClass.archetypes[c.archetype];
+    app.getLevelFeatures(c, at);
+  }
+};
+
+// generic feature getting, eliminates ones with the same label
+app.getFeatures = function(c, o) {
+  if (o && o.features) {
+    for (var i = 0;  i < o.features.length; i++) {
+      // assuming that features are added in order, that is level order
+      // higher level features added last and replace lower level ones of the same label
+      for (var j = 0; j < c.features.length; j++) {
+        if (c.features[j].label == o.features[i].label) {
+          // remove this feature since it will be replaced
+          c.features.splice(j, 1);
+        }
+      }
+      c.features.push(o.features[i]);
+    }
+  }
+};
+
+// get level dependent features
+app.getLevelFeatures = function(c, o) {
+    for (var i = 0; o.levelFeatures && i < o.levelFeatures.length; i++) {
+      var lf = o.levelFeatures[i];
+      if (lf && lf.level <= c.level) {
+        app.getFeatures(c, lf);
+      }
+    }
 };

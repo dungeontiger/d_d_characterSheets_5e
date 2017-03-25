@@ -1,0 +1,91 @@
+{
+  "name": "Kepli Ambster",
+  "playerName": "Christopher Gibson",
+  "race": "Halfling",
+  "subRace": "Stout",
+  "class": "Rogue",
+  "archetype": "Arcane Trickster",
+  "background": "Urchin",
+  "alignment": "Lawful Neutral",
+  "experience": 1623,
+  "hitPoints": 18,
+  "languages": [],
+  "skills": ["Insight", "Perception", "Deception", "Investigation"],
+  "str": 7,
+  "dex": 20,
+  "con": 4,
+  "int": 15,
+  "wis": 12,
+  "cha": 14,
+  "description": {
+    "age": 0,
+    "eyes": "",
+    "hair": "",
+    "skin": "",
+    "weight": 0,
+    "height": "",
+    "personal trait": "",
+    "ideal": "",
+    "bond": "",
+    "flaw": "",
+    "backstory": "",
+    "physical description": ""
+  },
+  "armor": "Leather",
+  "shield": false,
+  "weapons": [
+    {
+      "name": "Dagger"
+    },
+    {
+      "name": "Shortsword"
+    },
+    {
+      "name": "Light crossbow",
+      "ammo": 20
+    }
+  ],
+  "treasure" : {
+    "pp": 7,
+    "ep": 9,
+    "gp": 253,
+    "sp": 5,
+    "cp": 0
+  },
+  "equipment": [
+    "Canteen",
+    "7 days rations",
+    "Bedroll",
+    "Flint and steel",
+    "Thieve's tools",
+    "Climber's kit",
+    "Hooded lantern",
+    "3 pints of oil",
+    "Med kit",
+    "Jump potion",
+    "5 Lesser Healing Potiions",
+    "20ft rope",
+    "10 iron spikes",
+    "Winter clothes",
+    "3 thunder stones",
+    "Disguise kit",
+    "50ft silk rope",
+    "5 bells",
+    "1 deck ummarked cards"
+  ],
+  "expertise": [
+    "Sleight of Hand",
+    "Stealth"
+  ],
+  "spells": {
+    "cantrips": [
+      "Ray of Frost",
+      "Minor Illusion"
+    ],
+    "1": [
+      "Sleep",
+      "Illusory Script",
+      "Feather Fall"
+    ]
+  }
+}

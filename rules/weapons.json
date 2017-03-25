@@ -309,7 +309,7 @@
 		}
 	},
 	"Shortsword": {
-		"name": "Shortsward",
+		"name": "Shortsword",
 		"type": "Martial Melee",
 		"cost": {"gp":10},
 		"damage" : "1d6",
