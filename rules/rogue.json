@@ -17,6 +17,8 @@
     "dex",
     "int"
   ],
+  "castingAbility": "int",
+  "preparedSpells": false,
   "languages": [
     "Thieves' Cant"
   ],

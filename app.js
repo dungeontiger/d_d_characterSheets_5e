@@ -408,11 +408,13 @@ app.addCalculations = function(c) {
     return r;
   }
   // spell abilities
-  if (app.isSpellcaster(c)) {
+  if (Spells.isSpellcaster(c)) {
     c.castingAbility = playerClass.castingAbility;
     c.spellSaveDC = 8 + c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
     c.spellAttackMod = c.profBonus + app.abilityMods[c[c.castingAbility] - 1];
-    c.preparedSpells = app.abilityMods[c[c.castingAbility] - 1] + c.level;
+    if (playerClass.preparedSpells) {
+      c.preparedSpells = app.abilityMods[c[c.castingAbility] - 1] + c.level;
+    }
   }
   // gather spell
   if (c.domain) {
@@ -441,7 +443,7 @@ app.addCalculations = function(c) {
     // clerics have all spells at their disposal
     // TODO for other classes
     var r ='';
-    var spells = Spells.getKnownSpells(c, playerClass);
+    var spells = Spells.getCastableSpells(c, playerClass);
     for (var i = 0; i < 10; i++) {
       var spellSlots = Spells.getSpellslots(c, playerClass, i);
       if (!spellSlots) {
@@ -482,7 +484,7 @@ app.addCalculations = function(c) {
       for (var j = 0; j < spells.length; j++) {
         // write out the details for each spell of this level
         var spell = spells[j];
-        if ((i == 0 && spell.level == 'Cantrip' && c.spells.cantrips.indexOf(spell.name) != -1) || 
+        if ((i == 0 && Spells.castableCantrip(c, spell)) || 
           (i == parseInt(spell.level.substr(0,1)))) {
           r += '<tr>';
           // check to see if this spell is prepared
@@ -516,9 +518,7 @@ app.addCalculations = function(c) {
 
   // render the spell book
   c.spellBook = function() {
-    // this will list ALL spells, need to filter for known spells for
-    // other classes
-    var spells = Spells.getKnownSpells(c, playerClass);
+    var spells = Spells.getSpellsForSpellbook(c, playerClass);
     var r = '<div class="newPage title center screenDivider">Spellbook</div>';
     r += '<table class="spellbook"><tr valign="top">';
     for (var i = 0; i < spells.length; i++) {
@@ -789,28 +789,49 @@ app.weapons = function(c) {
 };
 
 app.spells = function(c) {
-  if (!app.isSpellcaster(c)) {
+  var playerClass = classes[c.class.toLowerCase()];
+  if (!Spells.isSpellcaster(c)) {
     // not a spell casting class
     return '';
   }
-  var t = `
-    <div class="newPage title center screenDivider">Spells</div>
-    <table class="tableBox">
-      <tr class="tableValueBox">
-        <td class="oneQuarter">{{castingAbility}}</td>
-        <td class="oneQuarter">{{spellSaveDC}}</td>
-        <td class="oneQuarter">{{spellAttackMod}}</td>
-        <td class="oneQuarter">{{preparedSpells}}</td>
-      </tr>
-      <tr>
-        <td class="label">Spellcasting Ability</td>
-        <td class="label">Spell Save DC</td>
-        <td class="label">Spell Attack Mod</td>
-        <td class="label">Prepared Spells</td>
-      </tr>
-  </table>
-  {{{spellTable}}}
-  `;
+  var t;
+  if (playerClass.preparedSpells) {
+    t = `
+      <div class="newPage title center screenDivider">Spells</div>
+      <table class="tableBox">
+        <tr class="tableValueBox">
+          <td class="oneQuarter">{{castingAbility}}</td>
+          <td class="oneQuarter">{{spellSaveDC}}</td>
+          <td class="oneQuarter">{{spellAttackMod}}</td>
+          <td class="oneQuarter">{{preparedSpells}}</td>
+        </tr>
+        <tr>
+          <td class="label">Spellcasting Ability</td>
+          <td class="label">Spell Save DC</td>
+          <td class="label">Spell Attack Mod</td>
+          <td class="label">Prepared Spells</td>
+        </tr>
+    </table>
+    {{{spellTable}}}
+    `;
+  } else {
+    t = `
+      <div class="newPage title center screenDivider">Spells</div>
+      <table class="tableBox">
+        <tr class="tableValueBox">
+          <td class="oneQuarter">{{castingAbility}}</td>
+          <td class="oneQuarter">{{spellSaveDC}}</td>
+          <td class="oneQuarter">{{spellAttackMod}}</td>
+        </tr>
+        <tr>
+          <td class="label">Spellcasting Ability</td>
+          <td class="label">Spell Save DC</td>
+          <td class="label">Spell Attack Mod</td>
+        </tr>
+    </table>
+    {{{spellTable}}}
+    `;
+  }
   return mustache.render(t, c);
 };
 
@@ -903,7 +924,7 @@ app.characterDescription = function(c) {
 };
 
 app.renderSpellbook = function(c) {
-    if (app.isSpellcaster(c)) {
+    if (Spells.isSpellcaster(c)) {
       var t = '{{{spellBook}}}';
       return mustache.render(t,c);
     }
@@ -1066,14 +1087,4 @@ app.getLevelFeatures = function(c, o) {
         app.getFeatures(c, lf);
       }
     }
-};
-
-// returns true if has feature 'spellcasting'
-app.isSpellcaster = function(c) {
-  for (var i = 0; i < c.features.length; i++) {
-    if (c.features[i].label == 'Spellcasting') {
-      return true;
-    }
-  }
-  return false;
 };

@@ -9,7 +9,8 @@ exports.getSpell = function(name) {
   console.log('Failed to find spell ' + name);
 };
 
-exports.getKnownSpells = function(c, playerClass) {
+// gets the list of spells that should appear in a 'spellbook'
+exports.getSpellsForSpellbook = function(c, playerClass) {
   var r = [];
   var maxLevel = exports.getMaxSpellLevel(c, playerClass);
   for (var i = 0; i < spells.length; i++) {
@@ -18,12 +19,15 @@ exports.getKnownSpells = function(c, playerClass) {
       r.push(spell);
     }
   }
-  // add in any known spells on the character sheet
+  // add in any known spells on the character sheet if not already there
   if (c.spells) {
     for (var level in c.spells) {
       var s = c.spells[level];
       for (var i = 0; i < s.length; i++) {
-        r.push(exports.getSpell(s[i]));
+        var spell = exports.getSpell(s[i]);
+        if (!findSpell(r, spell)) {
+          r.push(spell);
+        }
       }
     }
   }
@@ -42,7 +46,14 @@ exports.getKnownSpells = function(c, playerClass) {
       }
     }
   }
-
+  r.sort(function(a, b) {
+    if (a.name > b.name) {
+      return 1;
+    } else if (a.name < b.name) {
+      return -1;
+    }
+    return 0;
+  });
   return r;
 };
 
@@ -60,6 +71,12 @@ exports.getMaxSpellLevel = function(c, playerClass) {
     }
   }
   return l;
+};
+
+// gets the list of spells that can be cast
+// this may or may not be the same as the spells in the spell book
+exports.getCastableSpells = function(c, playerClass) {
+    return exports.getSpellsForSpellbook(c, playerClass);
 };
 
 exports.getSpellslots = function(c, playerClass, level) {
@@ -89,3 +106,31 @@ exports.getSpellslots = function(c, playerClass, level) {
     return spellSlots[level.toString()];
   }
 };
+
+// returns true if has feature 'spellcasting'
+exports.isSpellcaster = function(c) {
+  for (var i = 0; i < c.features.length; i++) {
+    if (c.features[i].label == 'Spellcasting') {
+      return true;
+    }
+  }
+  return false;
+};
+
+exports.castableCantrip = function(c, spell) {
+  return spell.level == 'Cantrip' && (c.spells.cantrips.indexOf(spell.name) != -1 || isClassSpell(c, spell.name));
+};
+
+function isClassSpell(c, spellName) {
+  // for now just make sure arcane trickster has mage hand
+  return spellName == 'Mage Hand' && c.class == 'Rogue' && c.archetype == 'Arcane Trickster';
+};
+
+function findSpell(list, spell) {
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].name == spell.name) {
+      return true;
+    }
+  }
+  return false;
+}

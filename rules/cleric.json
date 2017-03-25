@@ -18,6 +18,7 @@
   ],
   "knownSpells" : "wis + level",
   "castingAbility": "wis",
+  "preparedSpells": true,
   "levelFeatures": [
     {
       "level": 1,
