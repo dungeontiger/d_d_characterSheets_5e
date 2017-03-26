@@ -1,22 +1,6 @@
 var express = require('express');
 var fs = require('fs');
 var mustache = require('mustache');
-
-// D&D data files
-var races = [];
-// TODO: clean up load
-races['human'] = require('./rules/human.json');
-races['halfling'] = require('./rules/halfling.json');
-var classes = [];
-// TODO: clean up load
-classes['cleric'] = require('./rules/cleric.json');
-classes['rogue'] = require('./rules/rogue.json');
-var skills = require('./rules/skills.json');
-var backgrounds = require('./rules/backgrounds.json');
-var armor = require('./rules/armor.json');
-var weapons = require('./rules/weapons.json');
-var Spells = require('./Spells');
-
 var app = express();
 
 app.use(express.static('public'));
@@ -35,58 +19,29 @@ app.listen(3000, function () {
   console.log('Ready');
 });
 
-///////////////////////////
-/// end of express code
-///////////////////////////
+// load classes
+var Spells = require('./Spells');
 
-// D&D data
-// TODO: move to data files
-app.exp = [
-  0,
-  300,
-  900,
-  2700,
-  6500,
-  14000,
-  23000,
-  34000,
-  48000,
-  64000,
-  85000,
-  100000,
-  120000,
-  140000,
-  165000,
-  195000,
-  225000,
-  265000,
-  305000,
-  355000
-];
-
-app.profBonus = [
-  2, 2, 2, 2,
-  3, 3, 3, 3,
-  4, 4, 4, 4,
-  5, 5, 5, 5,
-  6, 6, 6, 6
-];
-
-app.abilityMods = [
-  -5,
-  -4, -4,
-  -3, -3,
-  -2, -2,
-  -1, -1,
-  0, 0,
-  1, 1,
-  2, 2,
-  3, 3,
-  4, 4,
-  5, 5
-];
-
-// render function
+// data files
+app.uncheckedBox = '&#9723;';
+app.checkedBox = '&#9724;';
+app.races = [];
+var raceList = require('./rules/races.json');
+for (var r in raceList) {
+  app.races[raceList[r]] = require('./rules/' + raceList[r] + '.json');
+}
+app.classes = [];
+var classList = require('./rules/classes.json');
+for (var r in classList) {
+  app.classes[classList[r]] = require('./rules/' + classList[r] + '.json');
+}
+app.skills = require('./rules/skills.json');
+app.backgrounds = require('./rules/backgrounds.json');
+app.armor = require('./rules/armor.json');
+app.weapons = require('./rules/weapons.json');
+app.exp = require('./rules/exp.json');
+app.profBonus = require('./rules/profBonus.json');
+app.abilityMods = require('./rules/abilityMods.json');
 
 app.renderCharacter = function(character, res) {
   // add calculations
@@ -115,9 +70,9 @@ app.renderCharacter = function(character, res) {
   // ability scores and saving Throws
   output += app.abilityScoresSavingThrows(character);
   // skills, proficiencies and current stats block
-  output += app.skills(character);
+  output += app.drawSkills(character);
   // weapons
-  output += app.weapons(character);
+  output += app.drawWeapons(character);
   // spells
   output += app.spells(character);
   // equipment and treasure
@@ -147,13 +102,13 @@ app.getNumericPrefix = function(n) {
 };
 
 app.addCalculations = function(c) {
-  var race = races[c.race.toLowerCase()];
+  var race = app.races[c.race.toLowerCase()];
   var subRace;
   if (c.subRace) {
     subRace = race.subRaces[c.subRace];
   }
-  var playerClass = classes[c.class.toLowerCase()];
-  var background = backgrounds[c.background.toLowerCase()];
+  var playerClass = app.classes[c.class.toLowerCase()];
+  var background = app.backgrounds[c.background.toLowerCase()];
   // level
   for (var i = 0; i < app.exp.length; i++) {
     if ( app.exp[i] >= c.experience) {
@@ -228,15 +183,15 @@ app.addCalculations = function(c) {
   };
   // save proficiencies
   c.savingThrowProficiencies = {
-    'str': '&#9723;',
-    'dex': '&#9723;',
-    'con': '&#9723;',
-    'int': '&#9723;',
-    'wis': '&#9723;',
-    'cha': '&#9723;'
+    'str': app.uncheckedBox,
+    'dex': app.uncheckedBox,
+    'con': app.uncheckedBox,
+    'int': app.uncheckedBox,
+    'wis': app.uncheckedBox,
+    'cha': app.uncheckedBox
   };
   for (var i = 0; i < playerClass.savingThrowProficiencies.length; i++) {
-    c.savingThrowProficiencies[playerClass.savingThrowProficiencies[i]] = '&#9724;';
+    c.savingThrowProficiencies[playerClass.savingThrowProficiencies[i]] = app.checkedBox;
   }
   // save numbers
   if (c.savingThrowProficiencies.str) {
@@ -275,10 +230,10 @@ app.addCalculations = function(c) {
   c.hitDice = c.level + 'd' + playerClass.hitDice;
   // skills
   c.allSkills = [];
-  for (var skill in skills) {
-    var s = skills[skill];
+  for (var skill in app.skills) {
+    var s = app.skills[skill];
     if (c.skills.indexOf(s.name) != -1 || background.skills.indexOf(s.name) != -1) {
-      s.checked = '&#9724;';
+      s.checked = app.checkedBox;
       // if expertise, prof bonus x 2
       var profBonus = c.profBonus;
       if (c.expertise && c.expertise.indexOf(s.name) != -1) {
@@ -286,7 +241,7 @@ app.addCalculations = function(c) {
       }
       s.modifier = app.modStr(app.abilityMods[c[s.ability] - 1] + profBonus);
     } else {
-      s.checked = '&#9723;';
+      s.checked = app.uncheckedBox;
       s.modifier = app.modStr(app.abilityMods[c[s.ability] - 1]);
     }
     c.allSkills.push(s);
@@ -296,13 +251,13 @@ app.addCalculations = function(c) {
   c.currentHD = function() {
     var r = '';
     for (var i = 0; i < c.level; i++) {
-      r += '&#9723;';
+      r += app.uncheckedBox;
     }
     return r;
   }
   // armor class
   if (c.armor) {
-      c.armorObj = armor[c.armor];
+      c.armorObj = app.armor[c.armor];
   }
   c.ac = function() {
     // TODO: wearing armor you are not proficient in has serious repercussions on abilities and movement
@@ -324,7 +279,7 @@ app.addCalculations = function(c) {
       ac = 10 + app.abilityMods[c.dex - 1];
     }
     if (c.shield) {
-      ac += armor['Shield'].acMod;
+      ac += app.armor['Shield'].acMod;
     }
     return ac;
   }
@@ -360,7 +315,7 @@ app.addCalculations = function(c) {
     for (var i = 0; i < c.weapons.length; i++) {
       var w = {};
       r.push(w);
-      var weaponStats = weapons[c.weapons[i].name];
+      var weaponStats = app.weapons[c.weapons[i].name];
       w.name = weaponStats.name;
       if (c.weapons[i].ammo) {
         w.ammo = c.weapons[i].ammo;
@@ -458,7 +413,7 @@ app.addCalculations = function(c) {
         // level 1 to 9
         levelName = app.getNumericPrefix(i) + ' Level - ' + '<span style="font-weight: normal;">Spell Slots: ';
         for (var k = 0; k < spellSlots; k++) {
-          levelName += '&#9723;';
+          levelName += app.uncheckedBox;
         }
         levelName += '</span></td></tr>'
       }
@@ -488,14 +443,14 @@ app.addCalculations = function(c) {
           (i == parseInt(spell.level.substr(0,1)))) {
           r += '<tr>';
           // check to see if this spell is prepared
-          var box = '&#9723;';
+          var box = app.uncheckedBox;
           if (spell.level == 'Cantrip') {
             box = '';
           }
           if (spell.level != 'Cantrip' && domain) {
             var domainSpells = domain.knownDomainSpells[i.toString()];
             if (domainSpells.indexOf(spell.name) != -1) {
-              box = '&#9724;';
+              box = app.checkedBox;
             }
           }
           r += '<td class="mediumRightPadding">' + box + '</td>';
@@ -690,7 +645,7 @@ app.abilityScoresSavingThrows = function(c) {
   return mustache.render(t, c);
 };
 
-app.skills = function(c) {
+app.drawSkills = function(c) {
   var t = `
     <table>
       <tr>
@@ -759,7 +714,7 @@ app.skills = function(c) {
   return mustache.render(t, c);
 };
 
-app.weapons = function(c) {
+app.drawWeapons = function(c) {
   var t = `
   <div class="header">Weapons</div>
   <table>
@@ -789,7 +744,7 @@ app.weapons = function(c) {
 };
 
 app.spells = function(c) {
-  var playerClass = classes[c.class.toLowerCase()];
+  var playerClass = app.classes[c.class.toLowerCase()];
   if (!Spells.isSpellcaster(c)) {
     // not a spell casting class
     return '';
